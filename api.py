@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify,Flask
 import mysql.connector
 from flask_cors import CORS
 # Blueprint 설정
@@ -68,3 +68,9 @@ def get_ranking():
         if connection and connection.is_connected():
             cursor.close()
             connection.close()
+
+app = Flask(__name__)
+app.register_blueprint(api_blueprint)
+
+if __name__ == '__main__':
+    app.run(debug=True)
