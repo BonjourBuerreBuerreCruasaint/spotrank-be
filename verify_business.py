@@ -8,7 +8,7 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 verify_business_blueprint = Blueprint('verify_business', __name__)
 # 공공 API 키 설정
 PUBLIC_API_URL = "https://api.odcloud.kr/api/nts-businessman/v1/status"
-SERVICE_KEY = "+CrYjtAd5+ux6GRGZcfYGrkyPcmZjQtUvtWKPq2Cepe7C3t6wAvg3k+OVBMhaTZLfrxS+CRpUxQPiFkxovWBbA==3"  # 발급받은 API 키 입력
+SERVICE_KEY = "wuT+UJm4T2EBtTIM7yrKqUNXQsMIMaq9P6/ibdg/b/SV9Wq1t2fDG/N1Cy+JCkUnbMLLPdPnBg184/npVGLp5A=="  # 발급받은 API 키 입력
 
 
 @verify_business_blueprint.route('/verify-business', methods=['POST'])

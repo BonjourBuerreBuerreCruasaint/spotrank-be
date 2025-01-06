@@ -1,6 +1,6 @@
 import mysql.connector
-from flask import Flask, request, jsonify, Blueprint
-from werkzeug.security import generate_password_hash
+from flask import Flask, request, jsonify, Blueprint, session
+import bcrypt
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -20,9 +20,9 @@ def get_db_connection():
 # 새 비밀번호 설정
 @reset_password_blueprint.route('/reset-password', methods=['POST'])
 def reset_password():
-    data = request.json  # 요청에서 JSON 데이터 가져오기
-    email = data.get('email')
-    new_password = data.get('newPassword')
+    email = session['email']
+    new_password = request.json.get('newPassword')
+    print("email",email)
 
     if not email or not new_password:
         return jsonify({'message': '이메일과 새 비밀번호를 모두 제공해야 합니다.'}), 400
@@ -39,8 +39,10 @@ def reset_password():
             return jsonify({'message': '사용자를 찾을 수 없습니다.'}), 404
 
         # 새 비밀번호를 해시하고 업데이트
-        hashed_password = generate_password_hash(new_password)
-        cursor.execute("UPDATE users SET password_hash = %s WHERE email = %s", (hashed_password, email))
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        print(hashed_password)
+        print(new_password)
+        cursor.execute("UPDATE users SET password = %s WHERE email = %s", (hashed_password, email))
         connection.commit()
 
         return jsonify({'message': '비밀번호가 성공적으로 변경되었습니다.'}), 200

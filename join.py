@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify, Blueprint
 import mysql.connector
 from flask_bcrypt import Bcrypt
+import bcrypt
 from flask_cors import CORS  # flask_cors에서 CORS 가져오기
 
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
+# bcrypt = Bcrypt(app)
 
 # CORS 설정 (모든 /api/* 경로에 대해 localhost:3000에서 오는 요청을 허용)
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -47,8 +48,7 @@ def signup():
 
     try:
         # 비밀번호 해시화
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         connection = get_db_connection()
         cursor = connection.cursor()
 
