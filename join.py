@@ -63,10 +63,12 @@ def signup():
             VALUES (%s, %s, %s, %s, %s)
         """, (email, hashed_password, phone, birthdate, username))
         connection.commit()
+        user_id = cursor.lastrowid
         cursor.close()
         connection.close()
 
-        return jsonify({'message': '회원가입이 성공적으로 완료되었습니다.'}), 201
+        return jsonify({'message': '회원가입이 성공적으로 완료되었습니다.',
+                        'id': user_id}), 201
     except mysql.connector.Error as err:
         print(f"Database error: {err}")  # 추가된 로그
         return jsonify({'message': f'회원가입 중 오류 발생: {err}'}), 500
