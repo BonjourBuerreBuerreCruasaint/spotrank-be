@@ -5,8 +5,8 @@ import pymysql
 import bcrypt
 
 app = Flask(__name__)
-
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+app.secret_key='Welcome1!'
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}},supports_credentials=True)
 
 login_blueprint = Blueprint('login', __name__)  # API URL prefix
 
@@ -30,8 +30,6 @@ def login():
     data = request.json
     email = data.get('email')
     password = data.get('password')
-    session['email'] = email
-    session['isLoggedIn'] = True
 
     # Validate email format
     if not validate_email(email):
@@ -40,7 +38,7 @@ def login():
     try:
         conn = get_db_connection()
         with conn.cursor() as cursor:
-            query = "SELECT * FROM users WHERE email = %s"
+            query = "SELECT id, password FROM users WHERE email = %s"
             cursor.execute(query, (email,))
             user = cursor.fetchone()
 
@@ -48,8 +46,9 @@ def login():
                 stored_hashed_password = user['password'].encode('utf-8')
                 if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
                     session['isLoggedIn'] = True
-                    session['email'] = email
-                    return jsonify({"message": "로그인 성공", "email": email}), 200
+                    session['user_id'] = user['id']
+
+                    return jsonify({"message": "로그인 성공", "id": user['id']}), 200
                 else:
                     return jsonify({"error": "비밀번호가 잘못되었습니다"}), 401
             else:
@@ -62,16 +61,15 @@ def login():
 
 @login_blueprint.route('/logout', methods=['POST'])
 def logout():
-    session.pop('isLoggedIn', None)
-    session.pop('email', None)
-    return jsonify({"message": "로그아웃 성공"}), 200
+    try:
+        session.clear()  # 세션 데이터 전체 삭제
+        response = jsonify({"message": "로그아웃 성공"})
+        response.set_cookie('session','',expires=0)
+        return response
+    except Exception as e:
+        print(f"Error clearing session: {e}")
+        return jsonify({"error": "세션 초기화 중 오류 발생"}), 500
 
-@login_blueprint.route('/status', methods=['GET'])
-def status():
-    if session.get('isLoggedIn'):
-        return jsonify({"loggedIn": True, "email": session.get('email')}), 200
-    else:
-        return jsonify({"loggedIn": False}), 200
 
 app.register_blueprint(login_blueprint)
 
