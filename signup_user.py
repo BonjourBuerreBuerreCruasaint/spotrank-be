@@ -9,8 +9,7 @@ app = Flask(__name__)
 
 # CORS 설정 (모든 /api/* 경로에 대해 localhost:3000에서 오는 요청을 허용)
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
-
-join_blueprint = Blueprint('join', __name__)
+signup_blueprint = Blueprint('signup', __name__)
 
 db_config = {
     'host': 'localhost',
@@ -26,7 +25,7 @@ def get_db_connection():
         print(f"MySQL 연결 실패: {err}")
         raise
 
-@join_blueprint.route('/signup', methods=['POST', 'OPTIONS'])
+@signup_blueprint.route('/signup', methods=['POST', 'OPTIONS'])
 def signup():
     if request.method == 'OPTIONS':
         # CORS pre-flight 요청을 처리
@@ -72,7 +71,7 @@ def signup():
     except Exception as e:
         print(f"Unexpected error: {e}")  # 예기치 않은 오류 출력
         return jsonify({'message': '회원가입 중 예기치 않은 오류가 발생했습니다.'}), 500
-app.register_blueprint(join_blueprint)
+app.register_blueprint(signup_blueprint)
 
 if __name__ == '__main__':
     app.run(debug=True)
