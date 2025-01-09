@@ -7,8 +7,8 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 verify_business_blueprint = Blueprint('verify_business', __name__)
 # 공공 API 키 설정
-PUBLIC_API_URL = "https://api.odcloud.kr/api/nts-businessman/v1/status"
-SERVICE_KEY = "wuT+UJm4T2EBtTIM7yrKqUNXQsMIMaq9P6/ibdg/b/SV9Wq1t2fDG/N1Cy+JCkUnbMLLPdPnBg184/npVGLp5A=="  # 발급받은 API 키 입력
+PUBLIC_API_URL = "https://api.odcloud.kr/api/nts-businessman/v1/validate"
+SERVICE_KEY = "L3YjCW2L1CeEnfaIBq0Z79BrI6EcRtps/Zh13BYUIyGnZFlkUwEC/sLS9ys6QlcxipTW9CPILDZDS8ZN+woowg=="  # 발급받은 API 키 입력
 
 
 @verify_business_blueprint.route('/verify-business', methods=['POST'])
@@ -19,18 +19,23 @@ def verify_business():
     opening_date = data.get('openingDate')
     opening_date = opening_date.replace('-', '')
     business_name = data.get('businessName')
-
+    print(opening_date)
+    print(PUBLIC_API_URL)
     # 공공 API 요청 데이터
     payload = {
-        "b_no": [business_number],  # 사업자등록번호
-        "start_dt": opening_date,  # 개업일
-        "p_nm": business_name,  # 대표자 성명
-        "p_nm2": "",
-        "b_nm": "",
-        "corp_no": "",
-        "b_sector": "",
-        "b_type": "",
-        "b_adr": ""
+        "businesses": [  # 요청 형식에 맞게 수정
+            {
+                "b_no": business_number,  # 사업자등록번호
+                "start_dt": opening_date,  # 개업일
+                "p_nm": business_name,  # 대표자 성명
+                "p_nm2": "",
+                "b_nm": "",
+                "corp_no": "",
+                "b_sector": "",
+                "b_type": "",
+                "b_adr": ""
+            }
+        ]
     }
 
     params = {
@@ -43,13 +48,31 @@ def verify_business():
         # API 요청
         response = requests.post(PUBLIC_API_URL, json=payload, params=params)
         response_data = response.json()
-
+        print(response_data)
         # API 응답 처리
         if response.status_code == 200:
-            # 사업자 진위 여부 확인 결과
-            status = response_data.get("data")[0].get("b_stt")
-            message = response_data.get("data")[0].get("tax_type")
-            return jsonify({"status": status, "message": message}), 200
+            api_data = response_data.get("data", [{}])[0]
+
+            # 1. 데이터 필드 존재 여부 확인
+            if not api_data:
+                return jsonify({"message": "API 응답에 유효한 데이터가 없습니다."}), 400
+
+            # 2. 상태 코드 확인
+            status = api_data.get("b_stt")  # 사업자 상태 코드
+            tax_type = api_data.get("tax_type")  # 과세 유형
+            valid_check = api_data.get("valid")
+
+            # 3. 조건 검사 (사업 상태 및 기타 매칭)
+            if valid_check == '02':
+                return jsonify({
+                    "message": "사업자등록번호, 이름, 개업일이 일치하지 않습니다.",
+                    "status": status
+                }), 400
+
+            return jsonify({
+                "message": "사업자 확인 완료",
+                "status": status
+            }), 200
         else:
             return jsonify({"error": response_data.get("message", "API 호출 실패")}), 400
     except Exception as e:
