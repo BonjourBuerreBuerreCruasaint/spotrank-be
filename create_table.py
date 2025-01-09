@@ -47,54 +47,6 @@ def create_sales_table_for_store(store_id):
         if connection:
             connection.close()
 
-@app.route('/')
-def home():
-    """루트 경로"""
-    return "Flask 애플리케이션이 정상적으로 실행 중입니다!"
-
-@app.route('/add_store', methods=['POST'])
-def add_store():
-    """새로운 매장을 추가하고 실시간 매출정보 테이블 생성"""
-    data = request.json
-    user_id = data.get('user_id')
-    store_name = data.get('store_name')
-    address = data.get('address')
-    store_number = data.get('store_number')
-    category = data.get('category')
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
-
-    if not all([user_id, store_name, address, category, latitude, longitude]):
-        return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
-
-    try:
-        connection = get_db_connection()
-        with connection.cursor() as cursor:
-            # 새로운 매장 추가
-            insert_store_query = """
-            INSERT INTO Store (user_ID, store_name, address, store_number, category, latitude, longitude)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(insert_store_query, (user_id, store_name, address, store_number, category, latitude, longitude))
-            connection.commit()
-
-            # 새로 추가된 매장의 ID 가져오기
-            store_id = cursor.lastrowid
-
-        # 실시간 매출정보 테이블 생성
-        create_sales_table_for_store(store_id)
-
-        return jsonify({'message': f'매장 {store_name}이 성공적으로 추가되었습니다.', 'store_id': store_id}), 201
-
-    except pymysql.MySQLError as err:
-        return jsonify({'message': f'매장 추가 중 오류 발생: {err}'}), 500
-
-    finally:
-        if connection:
-            connection.close()
-
-if __name__ == '__main__':
-    app.run(debug=True)
 def create_analysis_and_visualization_tables(store_id):
     """메뉴 분석 및 시각화 데이터를 위한 테이블 생성"""
     try:
@@ -130,6 +82,10 @@ def create_analysis_and_visualization_tables(store_id):
         if connection:
             connection.close()
 
+@app.route('/')
+def home():
+    """루트 경로"""
+    return "Flask 애플리케이션이 정상적으로 실행 중입니다!"
 
 @app.route('/add_store', methods=['POST'])
 def add_store():
@@ -143,12 +99,22 @@ def add_store():
     latitude = data.get('latitude')
     longitude = data.get('longitude')
 
+    # 입력값 검증
     if not all([user_id, store_name, address, category, latitude, longitude]):
         return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
 
+    if not isinstance(latitude, int) or not isinstance(longitude, int):
+        return jsonify({'message': '위도와 경도는 정수여야 합니다.'}), 400
+
     try:
         connection = get_db_connection()
+
         with connection.cursor() as cursor:
+            # user_id가 User 테이블에 존재하는지 확인
+            cursor.execute("SELECT COUNT(*) FROM User WHERE user_ID = %s", (user_id,))
+            if cursor.fetchone()[0] == 0:
+                return jsonify({'message': f'user_id {user_id}는 존재하지 않습니다.'}), 400
+
             # 새로운 매장 추가
             insert_store_query = """
             INSERT INTO Store (user_ID, store_name, address, store_number, category, latitude, longitude)
@@ -174,3 +140,6 @@ def add_store():
     finally:
         if connection:
             connection.close()
+
+if __name__ == '__main__':
+    app.run(debug=True)
