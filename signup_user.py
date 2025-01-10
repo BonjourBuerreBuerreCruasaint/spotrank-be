@@ -12,10 +12,11 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 signup_blueprint = Blueprint('signup', __name__)
 
 db_config = {
-    'host': 'localhost',
+    'host': "127.0.0.1",
     'user': 'root',
-    'password': 'y2kxtom16spu!',
-    'database': 'info'
+    'password': 'Welcome1!',
+    'database': 'test_db'
+
 }
 
 def get_db_connection():

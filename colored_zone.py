@@ -11,7 +11,7 @@ colored_blueprint = Blueprint('colored_zone', __name__)
 def get_colored_zones():
     try:
         # Load CSV files
-        filtered_df = pd.read_csv('filtered_output.csv')
+        filtered_df = pd.read_csv('filtered_output1.csv')
         combined_df = pd.read_csv('combined_order.csv')
 
         # Merge DataFrames
@@ -47,7 +47,12 @@ def get_colored_zones():
             "orange": int(total_count * 0.25),
             "yellow": int(total_count * 0.25),
             "green": int(total_count * 0.20),
-            "blue": int(total_count * 0.20),
+            "blue": total_count - sum([
+                int(total_count * 0.10),
+                int(total_count * 0.25),
+                int(total_count * 0.25),
+                int(total_count * 0.20)
+            ])  # 남은 개수는 blue에 할당
         }
 
         colors = ["red"] * thresholds["red"] + \
