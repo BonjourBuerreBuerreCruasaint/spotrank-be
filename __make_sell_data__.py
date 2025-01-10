@@ -12,8 +12,8 @@ make_sell_data_blueprint = Blueprint('make_sell_data', __name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'y2kxtom16spu!',
-    'database': 'categories'
+    'password': 'Welcome1!',
+    'database': 'test_db'
 }
 
 # 데이터 저장소

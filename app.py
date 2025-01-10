@@ -3,13 +3,13 @@ import secrets
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-from api import api_blueprint  # api.py에서 Blueprint 가져오기
-from business_signup import business_join_blueprint
+from ranking import api_blueprint  # api.py에서 Blueprint 가져오기
+from signup_business import business_join_blueprint
 from colored_zone import colored_blueprint
 from find_id import find_id_blueprint
-from join import join_blueprint  # join.py에서 Blueprint 가져오기
+from signup_user import signup_blueprint  # join.py에서 Blueprint 가져오기
 from login import login_blueprint
-from make_sell_data import make_sell_data_blueprint  # make_sell_data.py에서 Blueprint 가져오기
+from __make_sell_data__ import make_sell_data_blueprint  # make_sell_data.py에서 Blueprint 가져오기
 from reset_password import reset_password_blueprint
 from store_update import store_update_blueprint
 from verify_business import verify_business_blueprint
@@ -25,7 +25,7 @@ bcrypt = Bcrypt(app)
 app.register_blueprint(api_blueprint, url_prefix='/')
 app.register_blueprint(make_sell_data_blueprint, url_prefix='/make-sell-data')
 #app.register_blueprint(location_blueprint, url_prefix='/')
-app.register_blueprint(join_blueprint, url_prefix='/api')  # '/api/signup'을 올바르게 설정
+app.register_blueprint(signup_blueprint, url_prefix='/api')  # '/api/signup'을 올바르게 설정
 app.register_blueprint(business_join_blueprint, url_prefix='/api')
 app.register_blueprint(verify_business_blueprint, url_prefix='/api')
 app.register_blueprint(find_id_blueprint, url_prefix='/api')
