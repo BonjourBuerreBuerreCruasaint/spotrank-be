@@ -3,6 +3,9 @@ import secrets
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
+
+from get_seouldata import get_seouldata_blueprint
+from jinfinalpeople import jinfinalpeople_blueprint
 from ranking import api_blueprint  # api.py에서 Blueprint 가져오기
 from signup_business import business_join_blueprint
 from colored_zone import colored_blueprint
@@ -33,6 +36,8 @@ app.register_blueprint(reset_password_blueprint, url_prefix='/api')
 app.register_blueprint(login_blueprint, url_prefix='/api')
 app.register_blueprint(colored_blueprint, url_prefix='/api')
 app.register_blueprint(store_update_blueprint, url_prefix='/api')
+app.register_blueprint(jinfinalpeople_blueprint, url_prefix='/api')
+app.register_blueprint(get_seouldata_blueprint,url_prefix='/api')
 
 if __name__ == '__main__':
-    app.run(debug=True)  # 포트 지정 가능
+    app.run(debug=True,host='0.0.0.0',port=5000)  # 포트 지정 가능

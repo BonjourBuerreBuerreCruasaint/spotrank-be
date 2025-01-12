@@ -58,7 +58,7 @@ time_column_names = ["order_time", "주문시간", "구매시각"]
 count_column_names = ["count", "수량", "개수", "갯수"]
 
 # 결과 저장 디렉토리 생성
-output_dir = "C:./output"
+output_dir = os.path.join(os.getcwd(), "output")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     
