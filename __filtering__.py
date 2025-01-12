@@ -1,7 +1,7 @@
 import pandas as pd
 
 # CSV 파일 읽기
-input_file = 'C:/Users/rim/OneDrive - KNOU/바탕 화면/spotrank-be/store_info.csv/store_info.csv'  # 입력 파일 경로
+input_file = 'store_info.csv/store_info.csv'  # 입력 파일 경로
 output_file = 'filtered_output1.csv'  # 출력 파일 경로
 
 # CSV 파일을 pandas DataFrame으로 읽어들임
