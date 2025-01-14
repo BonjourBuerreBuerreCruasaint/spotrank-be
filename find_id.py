@@ -3,6 +3,7 @@ import mysql.connector
 from flask_cors import CORS
 
 app = Flask(__name__)
+
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 find_id_blueprint = Blueprint('find_id', __name__)

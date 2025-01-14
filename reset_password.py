@@ -4,6 +4,7 @@ import bcrypt
 from flask_cors import CORS
 
 app = Flask(__name__)
+
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 reset_password_blueprint = Blueprint('reset_password', __name__)

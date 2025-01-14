@@ -41,12 +41,11 @@ def login():
             query = "SELECT id, password FROM users WHERE email = %s"
             cursor.execute(query, (email,))
             user = cursor.fetchone()
-
             if user:
                 stored_hashed_password = user['password'].encode('utf-8')
                 if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
                     session['isLoggedIn'] = True
-                    session['user_id'] = user['id']
+                    session['id'] = user['id']
 
                     return jsonify({"message": "로그인 성공", "id": user['id']}), 200
                 else:
