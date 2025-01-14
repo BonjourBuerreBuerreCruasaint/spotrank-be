@@ -1,9 +1,11 @@
 import secrets
+from datetime import timedelta
 
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 
+from get_menu_data import get_menu_data_blueprint
 from get_seouldata import get_seouldata_blueprint
 from jinfinalpeople import jinfinalpeople_blueprint
 from ranking import api_blueprint  # api.py에서 Blueprint 가져오기
@@ -19,12 +21,14 @@ from verify_business import verify_business_blueprint
 
 app = Flask(__name__)
 
-app.secret_key = secrets.token_hex(32)  # 세션 암호화 키 설정
-# CORS 설정
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+app.secret_key = 'Welcome1!' # 세션 암호화 키 설정
 
-bcrypt = Bcrypt(app)
-# Blueprint 등록 (각각에 url_prefix 추가)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # 세션 유지 시간 설정 (여기선 1일로 설정)
+app.config['SESSION_COOKIE_SECURE'] = False  # 개발 환경에서는 False
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 세션 쿠키 SameSite 설정
+# CORS 설정
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}},supports_credentials=True)
+
 app.register_blueprint(api_blueprint, url_prefix='/')
 app.register_blueprint(make_sell_data_blueprint, url_prefix='/make-sell-data')
 #app.register_blueprint(location_blueprint, url_prefix='/')
@@ -38,6 +42,7 @@ app.register_blueprint(colored_blueprint, url_prefix='/api')
 app.register_blueprint(store_update_blueprint, url_prefix='/api')
 app.register_blueprint(jinfinalpeople_blueprint, url_prefix='/api')
 app.register_blueprint(get_seouldata_blueprint,url_prefix='/api')
+app.register_blueprint(get_menu_data_blueprint, url_prefix='/api')
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)  # 포트 지정 가능
