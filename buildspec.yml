@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+
+  pre_build:
+    commands:
+      - echo Build started on `date`
+      - echo Installing dependencies...
+      - pip install -r requirements.txt
+
+  build:
+    commands:
+      - echo Building Flask App...
+      - python -m compileall .
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - docker build -t spotrank-be:latest .  # .env 파일 포함된 상태로 빌드
+      - docker tag spotrank-be:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest
+
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: yes

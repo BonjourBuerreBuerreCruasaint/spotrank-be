@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spotrank-be-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spotrank-be
+  template:
+    metadata:
+      labels:
+        app: spotrank-be
+    spec:
+      containers:
+        - name: spotrank-be
+          image: <your_ecr_repo>/spotrank-be:latest  # 빌드된 이미지를 ECR에서 가져옵니다.
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DATABASE_HOST
+              value: "127.0.0.1"
+            - name: DATABASE_USER
+              value: "root"
+            - name: DATABASE_PASSWORD
+              value: "password"
+            - name: DATABASE_NAME
+              value: "info"
