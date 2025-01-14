@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+
+  pre_build:
+    commands:
+      - echo Build started on `date`
+      - echo Installing dependencies...
+      - pip install -r requirements.txt  # spotrank-be에 맞는 명령어
+
+  build:
+    commands:
+      - echo Building Flask App...
+      - python -m compileall .  # Python 코드를 컴파일합니다.
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - docker build -t spotrank-be:latest .  # Docker 이미지 빌드
+      - docker tag spotrank-be:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest  # ECR에 푸시
+
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: yes
