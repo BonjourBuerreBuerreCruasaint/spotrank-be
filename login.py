@@ -1,14 +1,24 @@
-from flask import Flask, request, jsonify, session, Blueprint
+from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 import re
 import pymysql
 import bcrypt
+import redis
 
+# Flask App 초기화
 app = Flask(__name__)
-app.secret_key='Welcome1!'
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}},supports_credentials=True)
+app.secret_key = 'welcome1!'
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'session:'
+app.config['SESSION_REDIS'] = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+redis_client = app.config['SESSION_REDIS']  # Redis 클라이언트 초기화
 
 login_blueprint = Blueprint('login', __name__)  # API URL prefix
+
 
 # MySQL Database Configuration
 def get_db_connection():
@@ -20,11 +30,14 @@ def get_db_connection():
         cursorclass=pymysql.cursors.DictCursor
     )
 
+
 # Helper function to validate email
 def validate_email(email):
     regex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
     return re.match(regex, email) is not None
 
+
+# 로그인 엔드포인트
 @login_blueprint.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -41,13 +54,14 @@ def login():
             query = "SELECT id, password FROM users WHERE email = %s"
             cursor.execute(query, (email,))
             user = cursor.fetchone()
+
             if user:
                 stored_hashed_password = user['password'].encode('utf-8')
                 if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
-                    session['isLoggedIn'] = True
-                    session['id'] = user['id']
-
-                    return jsonify({"message": "로그인 성공", "id": user['id']}), 200
+                    # Redis에 사용자 세션 저장
+                    session_key = f"user:{user['id']}"
+                    redis_client.set(session_key, user['id'], ex=3600)  # 세션 유효기간: 1시간
+                    return jsonify({"message": "로그인 성공", "session_id": session_key}), 200
                 else:
                     return jsonify({"error": "비밀번호가 잘못되었습니다"}), 401
             else:
@@ -58,19 +72,9 @@ def login():
     finally:
         conn.close()
 
-@login_blueprint.route('/logout', methods=['POST'])
-def logout():
-    try:
-        session.clear()  # 세션 데이터 전체 삭제
-        response = jsonify({"message": "로그아웃 성공"})
-        response.set_cookie('session','',expires=0)
-        return response
-    except Exception as e:
-        print(f"Error clearing session: {e}")
-        return jsonify({"error": "세션 초기화 중 오류 발생"}), 500
 
-
-app.register_blueprint(login_blueprint)
+# Flask 애플리케이션에 Blueprint 등록
+app.register_blueprint(login_blueprint, url_prefix='/api')  # URL Prefix 추가
 
 if __name__ == '__main__':
     app.run(debug=True)
