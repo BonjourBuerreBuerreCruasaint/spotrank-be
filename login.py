@@ -3,19 +3,11 @@ from flask_cors import CORS
 import re
 import pymysql
 import bcrypt
-import redis
 
 # Flask App 초기화
 app = Flask(__name__)
 app.secret_key = 'welcome1!'
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
-app.config['SESSION_TYPE'] = 'redis'
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_KEY_PREFIX'] = 'session:'
-app.config['SESSION_REDIS'] = redis.StrictRedis(host='localhost', port=6379, db=0)
-
-redis_client = app.config['SESSION_REDIS']  # Redis 클라이언트 초기화
 
 login_blueprint = Blueprint('login', __name__)  # API URL prefix
 
@@ -58,10 +50,8 @@ def login():
             if user:
                 stored_hashed_password = user['password'].encode('utf-8')
                 if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
-                    # Redis에 사용자 세션 저장
-                    session_key = f"user:{user['id']}"
-                    redis_client.set(session_key, user['id'], ex=3600)  # 세션 유효기간: 1시간
-                    return jsonify({"message": "로그인 성공", "session_id": session_key}), 200
+
+                    return jsonify({"message": "로그인 성공", "user_id": user['id']}), 200
                 else:
                     return jsonify({"error": "비밀번호가 잘못되었습니다"}), 401
             else:
@@ -73,7 +63,7 @@ def login():
         conn.close()
 
 
-# Flask 애플리케이션에 Blueprint 등록
+# Flask 애플리케이션에 Blueprint 등록$
 app.register_blueprint(login_blueprint, url_prefix='/api')  # URL Prefix 추가
 
 if __name__ == '__main__':
