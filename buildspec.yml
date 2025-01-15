@@ -4,7 +4,7 @@ phases:
   install:
     commands:
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com
 
   pre_build:
     commands:
@@ -20,9 +20,9 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
-      - docker build -t spotrank-be:latest .  # .env 파일 포함된 상태로 빌드
-      - docker tag spotrank-be:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest
+      - docker build -t spotrank-be:test1 .  # .env 파일 포함된 상태로 빌드
+      - docker tag spotrank-be:test1 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:test1
+      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest
 
 artifacts:
   files:

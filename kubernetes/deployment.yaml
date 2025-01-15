@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: spotrank-be
-          image: <your_ecr_repo>/spotrank-be:latest  # 빌드된 이미지를 ECR에서 가져옵니다.
+          image: 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc/spotrank-be:test1  # 빌드된 이미지를 ECR에서 가져옵니다.
           ports:
             - containerPort: 5000
           env:
