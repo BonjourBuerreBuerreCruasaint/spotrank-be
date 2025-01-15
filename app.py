@@ -8,6 +8,7 @@ from flask_cors import CORS
 from get_menu_data import get_menu_data_blueprint
 from get_seouldata import get_seouldata_blueprint
 from jinfinalpeople import jinfinalpeople_blueprint
+from logout import logout_blueprint
 from ranking import api_blueprint  # api.py에서 Blueprint 가져오기
 from signup_business import business_join_blueprint
 from colored_zone import colored_blueprint
@@ -43,6 +44,7 @@ app.register_blueprint(store_update_blueprint, url_prefix='/api')
 app.register_blueprint(jinfinalpeople_blueprint, url_prefix='/api')
 app.register_blueprint(get_seouldata_blueprint,url_prefix='/api')
 app.register_blueprint(get_menu_data_blueprint, url_prefix='/api')
+app.register_blueprint(logout_blueprint, url_prefix='/api')
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)  # 포트 지정 가능

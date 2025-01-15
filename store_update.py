@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify, session, Blueprint
+from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 import pymysql
 
 app = Flask(__name__)
-app.secret_key = 'Welcome1!'
+app.secret_key = 'Welcome1!'  # Flask 세션을 위한 비밀키 설정
 store_update_blueprint = Blueprint('store_update_blueprint', __name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -21,17 +21,41 @@ db_config = {
 
 @store_update_blueprint.route('/update-store', methods=['POST'])
 def update_store():
-    # 세션 확인
-    if 'id' not in session:
-        return jsonify({'error': '세션에 id가 없습니다.'}), 400
+    # 클라이언트에서 전달된 user_id 확인 (localStorage에서 가져오는 값을 Authorization에 포함)
+    user_id = request.headers.get('Authorization')  # Authorization 헤더에서 user_id 추출
+    if not user_id:
+        return jsonify({'error': '인증되지 않은 요청입니다. 다시 로그인해주세요.'}), 401
 
-    store_id = session['id']
-    print("-----",store_id)
+    # 기존 데이터 가져오기
+    try:
+        connection = pymysql.connect(**db_config)
+        with connection.cursor() as cursor:
+            select_query = """
+                SELECT 
+                    store_name, 
+                    store_phone_number, 
+                    address, 
+                    description, 
+                    image 
+                FROM stores 
+                WHERE id = %s
+            """
+            cursor.execute(select_query, (user_id,))
+            existing_data = cursor.fetchone()
+
+            if not existing_data:
+                return jsonify({'error': '가게 정보를 찾을 수 없습니다.'}), 404
+
+        connection.close()
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': '서버에서 문제가 발생했습니다.'}), 500
+
     # 클라이언트에서 전달된 데이터
-    store_name = request.form.get('shopName')
-    store_phone_number = request.form.get('shopPhone')
-    address = request.form.get('shopAddress')
-    description = request.form.get('shopDescription')
+    store_name = request.form.get('shopName') or existing_data[0]
+    store_phone_number = request.form.get('shopPhone') or existing_data[1]
+    address = request.form.get('shopAddress') or existing_data[2]
+    description = request.form.get('shopDescription') or existing_data[3]
 
     shop_images = request.files.getlist('shopImages')
 
@@ -59,14 +83,14 @@ def update_store():
                     image = %s
                 WHERE id = %s
             """
-            image_path = image_paths[0] if image_paths else None  # 첫 번째 이미지를 대표 이미지로 저장
+            image_path = image_paths[0] if image_paths else existing_data[4]  # 첫 번째 이미지를 대표 이미지로 저장
             cursor.execute(update_query, (
                 store_name,
                 store_phone_number,
                 address,
                 description,
                 image_path,
-                store_id
+                user_id
             ))
 
             connection.commit()

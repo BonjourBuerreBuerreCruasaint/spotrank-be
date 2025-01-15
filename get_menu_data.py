@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request, session, Blueprint
+from flask import Flask, jsonify, request, Blueprint
 import mysql.connector
 from flask_cors import CORS
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Welcome1!'  # Flask 시크릿 키 설정
+app.config['SECRET_KEY'] = 'welcome1!'  # Flask 시크릿 키 설정
 get_menu_data_blueprint = Blueprint('get_menu_data', __name__)
 CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
@@ -25,29 +25,25 @@ def get_db_connection():
 # API 엔드포인트: 메뉴 데이터 가져오기
 @get_menu_data_blueprint.route('/get-menu-data', methods=['GET'])
 def get_menu_data():
-    if 'id' not in session:
-        return jsonify({"error": "세션에 로그인 ID가 없습니다."}), 400
-
     try:
+        # Authorization 헤더에서 user_id 가져오기
+        user_id = request.headers.get('Authorization')
+        if not user_id:
+            return jsonify({"error": "사용자 ID가 필요합니다."}), 401
+
+        # 데이터베이스 연결
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM menu WHERE ceo_id = %s", (session['id'],))
-        menus = cursor.fetchall()
-        conn.close()
-        if not menus:
-            return jsonify({"message": "데이터가 없습니다."}), 404  # 빈 데이터 처리
 
-        menu_data = [
-            {
-                "ceo_id": menu['ceo_id'],
-                "name": menu['name'],
-                "price": menu['price'],
-                "total_count": menu['total_count'],
-                "total_sales": menu['total_sales']
-            }
-            for menu in menus
-        ]
-        return jsonify(menu_data), 200
+        # 메뉴 데이터 쿼리
+        cursor.execute("SELECT * FROM menu WHERE ceo_id = %s", (user_id,))
+        menus = cursor.fetchall()
+
+        if not menus:
+            return jsonify({"message": "데이터가 없습니다."}), 404
+
+        # 결과 데이터 반환
+        return jsonify(menus), 200
 
     except mysql.connector.Error as err:
         print(f"데이터베이스 오류: {err}")
