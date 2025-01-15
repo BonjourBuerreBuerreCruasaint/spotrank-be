@@ -1,5 +1,4 @@
-import redis
-from flask import Flask, jsonify, request, Blueprint, session
+from flask import Flask, jsonify, request, Blueprint
 import mysql.connector
 from flask_cors import CORS
 
@@ -7,7 +6,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'welcome1!'  # Flask 시크릿 키 설정
 get_menu_data_blueprint = Blueprint('get_menu_data', __name__)
 CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:3000"}})
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 # MySQL 연결 설정
 db_config = {
@@ -28,22 +26,17 @@ def get_db_connection():
 @get_menu_data_blueprint.route('/get-menu-data', methods=['GET'])
 def get_menu_data():
     try:
-        # Authorization 헤더에서 세션 ID 가져오기
-        session_id = request.headers.get('Authorization')
-        if not session_id:
-            return jsonify({"error": "세션 ID가 필요합니다."}), 401
-
-        # Redis에서 ceo_id 가져오기
-        ceo_id = redis_client.get(session_id)
-        if not ceo_id:
-            return jsonify({"error": "유효하지 않은 세션입니다."}), 401
+        # Authorization 헤더에서 user_id 가져오기
+        user_id = request.headers.get('Authorization')
+        if not user_id:
+            return jsonify({"error": "사용자 ID가 필요합니다."}), 401
 
         # 데이터베이스 연결
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
         # 메뉴 데이터 쿼리
-        cursor.execute("SELECT * FROM menu WHERE ceo_id = %s", (ceo_id,))
+        cursor.execute("SELECT * FROM menu WHERE ceo_id = %s", (user_id,))
         menus = cursor.fetchall()
 
         if not menus:
@@ -59,7 +52,6 @@ def get_menu_data():
     except Exception as e:
         print(f"알 수 없는 오류: {e}")
         return jsonify({"error": "알 수 없는 오류가 발생했습니다."}), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)

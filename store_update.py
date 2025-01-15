@@ -1,9 +1,8 @@
-from flask import Flask, request, jsonify, session, Blueprint
+from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 import pymysql
-import redis
 
 app = Flask(__name__)
 app.secret_key = 'Welcome1!'  # Flask 세션을 위한 비밀키 설정
@@ -20,28 +19,32 @@ db_config = {
     'database': 'info'
 }
 
-# Redis 클라이언트 설정
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
-
 @store_update_blueprint.route('/update-store', methods=['POST'])
 def update_store():
-    # Redis 세션 확인
-    stored_session_id = request.headers.get('Authorization')
-    if not stored_session_id:
-        return jsonify({'error': '세션에 id가 없습니다.'}), 400
-
-    # Redis에서 store_id 가져오기
-    store_id = redis_client.get(stored_session_id)
-    if not store_id:
-        return jsonify({'error': '세션이 만료되었습니다. 다시 로그인해주세요.'}), 400
+    # 클라이언트에서 전달된 user_id 확인 (localStorage에서 가져오는 값을 Authorization에 포함)
+    user_id = request.headers.get('Authorization')  # Authorization 헤더에서 user_id 추출
+    if not user_id:
+        return jsonify({'error': '인증되지 않은 요청입니다. 다시 로그인해주세요.'}), 401
 
     # 기존 데이터 가져오기
     try:
         connection = pymysql.connect(**db_config)
         with connection.cursor() as cursor:
-            select_query = "SELECT store_name, store_phone_number, address, description FROM stores WHERE id = %s"
-            cursor.execute(select_query, (store_id,))
+            select_query = """
+                SELECT 
+                    store_name, 
+                    store_phone_number, 
+                    address, 
+                    description, 
+                    image 
+                FROM stores 
+                WHERE id = %s
+            """
+            cursor.execute(select_query, (user_id,))
             existing_data = cursor.fetchone()
+
+            if not existing_data:
+                return jsonify({'error': '가게 정보를 찾을 수 없습니다.'}), 404
 
         connection.close()
     except Exception as e:
@@ -50,7 +53,7 @@ def update_store():
 
     # 클라이언트에서 전달된 데이터
     store_name = request.form.get('shopName') or existing_data[0]
-    store_phone_number = request.form.get('shopPhone') or existing_data[1]  # 기본값 설정
+    store_phone_number = request.form.get('shopPhone') or existing_data[1]
     address = request.form.get('shopAddress') or existing_data[2]
     description = request.form.get('shopDescription') or existing_data[3]
 
@@ -87,7 +90,7 @@ def update_store():
                 address,
                 description,
                 image_path,
-                store_id
+                user_id
             ))
 
             connection.commit()
