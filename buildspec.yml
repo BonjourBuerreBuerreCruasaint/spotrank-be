@@ -22,7 +22,8 @@ phases:
       - echo Build completed on `date`
       - docker build -t spotrank-be:test1 .  # .env 파일 포함된 상태로 빌드
       - docker tag spotrank-be:test1 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:test1
-      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest
+      - docker tag spotrank-be:test1 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest  # 최신 태그로 추가
+      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest  # 최신 태그로 푸시
 
 artifacts:
   files:
