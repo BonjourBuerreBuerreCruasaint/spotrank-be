@@ -1,12 +1,19 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: ap-northeast-2
+    AWS_ACCOUNT_ID: 440744225243
+    IMAGE_REPO_NAME: bbc
+    IMAGE_TAG: test1
+
 phases:
   install:
     runtime-versions:
-      python: 3.9  # Python 버전 명시
+      python: 3.9  # Python version specified
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
 
   pre_build:
     commands:
@@ -19,12 +26,12 @@ phases:
       - echo Building Flask App...
       - python -m compileall .
       - echo Building Docker image...
-      - docker build -t spotrank-be:test1 .
-      - docker tag spotrank-be:test1 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:test1
-      - docker tag spotrank-be:test1 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest
+      - docker build --platform=linux/amd64 -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
 
   post_build:
     commands:
       - echo Build completed on `date`
-      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:test1
-      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
