@@ -28,9 +28,3 @@ phases:
       - echo Build completed on `date`
       - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:test1
       - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest
-
-# artifacts 섹션 제거 (필요시 활성화)
-# artifacts:
-#   files:
-#     - '**/*'
-#   discard-paths: yes
