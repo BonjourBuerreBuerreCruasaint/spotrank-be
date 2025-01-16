@@ -12,7 +12,7 @@ db_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'y2kxtom16spu!',
-    'database': 'info'
+    'database': 'test_db'
 }
 
 def get_db_connection():

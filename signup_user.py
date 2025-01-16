@@ -14,7 +14,7 @@ db_config = {
     'host': "127.0.0.1",
     'user': 'root',
     'password': 'y2kxtom16spu!',
-    'database': 'info'
+    'database': 'test_db'
 
 }
 

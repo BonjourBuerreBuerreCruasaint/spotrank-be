@@ -18,7 +18,7 @@ def get_db_connection():
         host='localhost',
         user='root',
         password='y2kxtom16spu!',
-        database='info',
+        database='test_db',
         cursorclass=pymysql.cursors.DictCursor
     )
 
