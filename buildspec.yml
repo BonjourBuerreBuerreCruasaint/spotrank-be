@@ -1,0 +1,36 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9  # Python 버전 명시
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com
+
+  pre_build:
+    commands:
+      - echo Build started on `date`
+      - echo Installing dependencies...
+      - pip install -r requirements.txt
+
+  build:
+    commands:
+      - echo Building Flask App...
+      - python -m compileall .
+      - echo Building Docker image...
+      - docker build -t spotrank-be:test1 .
+      - docker tag spotrank-be:test1 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:test1
+      - docker tag spotrank-be:test1 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:test1
+      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/spotrank-be:latest
+
+# artifacts 섹션 제거 (필요시 활성화)
+# artifacts:
+#   files:
+#     - '**/*'
+#   discard-paths: yes

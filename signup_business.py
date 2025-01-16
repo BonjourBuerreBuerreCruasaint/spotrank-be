@@ -6,6 +6,7 @@ import mysql.connector
 
 # Flask 앱 인스턴스
 app = Flask(__name__)
+
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 business_join_blueprint = Blueprint('business_join', __name__)
@@ -43,6 +44,7 @@ def business_signup():
     address = data.get('address')
     category = data.get('category')
     description = data.get('description')
+    store_phone_number = data.get('storePhoneNumber')
 
     if not all([business_number, store_name, address, category]):
         return jsonify({'message':'모든 필드를 입력해야 합니다.'}), 400
@@ -57,8 +59,8 @@ def business_signup():
         cursor = connection.cursor()
 
         cursor.execute("""
-        INSERT INTO stores(business_number, store_name, address, category, description, image)
-        VALUES(%s, %s, %s, %s, %s, %s)""", (business_number, store_name, address, category, description, image_filename))
+        INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
+        VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
         connection.commit()
         cursor.close()
         connection.close()
