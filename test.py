@@ -1,16 +1,16 @@
-from flask import Flask, render_template
+import mysql.connector
 
-# Flask 앱 생성
-app = Flask(__name__)
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'Welcome1!',
+    'database': 'test_db'
+}
 
-# 라우팅 설정
-@app.route("/")
-def home():
-    return "Hello, Flask!"
+try:
+    connection = mysql.connector.connect(**db_config)
+    print("MySQL 연결 성공!")
+    connection.close()
+except mysql.connector.Error as err:
+    print(f"MySQL 연결 실패: {err}")
 
-@app.route("/about")
-def about():
-    return render_template("about.html")  # HTML 파일 렌더링
-
-if __name__ == "__main__":
-    app.run(debug=True)  # 디버그 모드로 실행
