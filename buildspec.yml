@@ -20,7 +20,7 @@ phases:
       - mv ./kubectl /usr/local/bin/kubectl
       - mkdir -p ~/.kube
       - echo "Configuring kubectl for EKS..."
-      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name spotrankEKS
+      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name bbcEKS
       - kubectl version --client
 
   pre_build:
@@ -40,7 +40,7 @@ phases:
 
   post_build:
     commands:
-      - echo "Build completed: `date`"
+      - echo "Build completed: 'date'"
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
       - echo "Deploying to EKS..."
