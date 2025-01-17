@@ -40,12 +40,13 @@ phases:
 
   post_build:
     commands:
-      - echo "Build completed: 'date'"
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
       - echo "Deploying to EKS..."
       - AWS_ECR_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
       - DATE="$(date)"
+      # Kubernetes 배포 YAML 파일에서 이미지 URI와 날짜를 올바르게 교체
+      - echo "Updating Kubernetes deployment files with new image URI and date..."
       - sed -i.bak "s#AWS_ECR_URI#${AWS_ECR_URI}#" ./EKS/deployment.yaml
       - sed -i.bak "s#DATE_STRING#${DATE}#" ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/deployment.yaml
