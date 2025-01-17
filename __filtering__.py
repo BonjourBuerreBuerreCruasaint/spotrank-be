@@ -11,7 +11,8 @@ fake = Faker()
 connection = pymysql.connect(
     host='localhost',  # MySQL 호스트
     user='root',  # MySQL 사용자 이름
-    password='y2kxtom16spu!',  # MySQL 비밀번호
+    password='Welcome1!',  # MySQL 비밀번호
+
     database='test_db'  # 사용할 데이터베이스 이름
 )
 
@@ -39,6 +40,7 @@ filtered_table_name = 'filtered_store_info'
 cursor = connection.cursor()
 create_table_query = f"""
 CREATE TABLE IF NOT EXISTS {filtered_table_name} (
+
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     상호명 VARCHAR(255),
     상권업종대분류명 VARCHAR(255),
@@ -57,6 +59,7 @@ cursor.execute(create_table_query)
 
 # DataFrame 데이터를 MySQL 테이블에 삽입
 for _, row in filtered_df.iterrows():
+
     email = fake.email()
     password = fake.password(length=10)
     phone = fake.phone_number()

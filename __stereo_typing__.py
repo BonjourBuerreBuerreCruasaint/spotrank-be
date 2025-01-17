@@ -3,6 +3,7 @@ import pandas as pd
 import math
 from datetime import datetime
 
+
 # MySQL 연결 설정
 db_config = {
     'host': 'localhost',
@@ -11,6 +12,13 @@ db_config = {
     'database': 'test_db'
 }
 
+# MySQL 연결 설정
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'Welcome1!',
+    'database': 'test_db'
+}
 
 # 날짜 형식 확인 함수
 def is_date(string):
@@ -20,10 +28,10 @@ def is_date(string):
     except (ValueError, TypeError):
         return False
 
-
 # NaN 값 확인 함수
 def is_nan(value):
     return value is None or (isinstance(value, float) and math.isnan(value))
+
 
 
 # MySQL 테이블 생성 함수 (처리된 데이터 저장용)
@@ -50,10 +58,6 @@ def create_processed_table():
     except Exception as e:
         print(f"Error creating table: {e}")
     finally:
-        if conn is not None and conn.is_connected():
-            cursor.close()
-            conn.close()
-
 
 # 데이터베이스에서 모든 `order_` 테이블 이름 가져오기
 def get_order_tables():
@@ -95,6 +99,7 @@ def process_table_data(table_name):
         data = pd.DataFrame(rows)
 
         # 데이터 처리
+
         for index, row in data.iterrows():
             processed_row = {
                 "store_name": row.get("store_name"),
@@ -143,7 +148,6 @@ def save_processed_data_to_mysql(processed_data):
     if not processed_data:
         print("No data to save.")
         return
-
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
