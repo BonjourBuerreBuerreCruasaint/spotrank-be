@@ -14,9 +14,10 @@ spec:
     spec:
       containers:
         - name: spotrank-be
-          image: 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc/spotrank-be:test1  # 빌드된 이미지를 ECR에서 가져옵니다.
+          image: 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:test1  # 이미지 URI는 `buildspec.yml`에서 동적으로 치환됩니다.
           ports:
             - containerPort: 5000
+          imagePullPolicy: Always  # 이미지 변경 시 최신 이미지를 사용
           env:
             - name: DATABASE_HOST
               value: "127.0.0.1"
@@ -26,3 +27,5 @@ spec:
               value: "password"
             - name: DATABASE_NAME
               value: "info"
+            - name: DATE  # EKS 배포 시점 정보를 저장
+              value: 'DATE_STRING'
