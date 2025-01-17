@@ -1,11 +1,18 @@
 import pandas as pd
 import pymysql
+from faker import Faker
+import random
+from datetime import datetime, timedelta
+import bcrypt
 
+# Faker 인스턴스 생성
+fake = Faker()
 # MySQL 데이터베이스 연결
 connection = pymysql.connect(
     host='localhost',  # MySQL 호스트
     user='root',  # MySQL 사용자 이름
     password='Welcome1!',  # MySQL 비밀번호
+
     database='test_db'  # 사용할 데이터베이스 이름
 )
 
@@ -33,6 +40,8 @@ filtered_table_name = 'filtered_store_info'
 cursor = connection.cursor()
 create_table_query = f"""
 CREATE TABLE IF NOT EXISTS {filtered_table_name} (
+
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     상호명 VARCHAR(255),
     상권업종대분류명 VARCHAR(255),
     상권업종중분류명 VARCHAR(255),
@@ -50,11 +59,25 @@ cursor.execute(create_table_query)
 
 # DataFrame 데이터를 MySQL 테이블에 삽입
 for _, row in filtered_df.iterrows():
+
+    email = fake.email()
+    password = fake.password(length=10)
+    phone = fake.phone_number()
+    birthdate = fake.date_of_birth(minimum_age=18, maximum_age=65).strftime('%Y-%m-%d')
+    username = fake.user_name()
+
     insert_query = f"""
     INSERT INTO {filtered_table_name} (상호명, 상권업종대분류명, 상권업종중분류명, 상권업종소분류명, 시도명, 시군구명, 행정동명, 법정동명, 도로명주소, 경도, 위도)
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
+
     cursor.execute(insert_query, tuple(row))
+
+    insert_user_query = """
+        INSERT INTO users (email, password, phone, birthdate, username)
+        VALUES (%s, %s, %s, %s, %s)
+        """
+    cursor.execute(insert_user_query, (email, password, phone, birthdate, username))
 
 # 변경 사항 커밋
 connection.commit()
