@@ -13,6 +13,7 @@ connection = pymysql.connect(
     password='welcome1!',
     database='test_db',
     charset='utf8mb4'
+
 )
 
 # 'store_info' 테이블에서 데이터 읽기
@@ -40,6 +41,7 @@ cursor = connection.cursor()
 # 테이블 생성 쿼리
 create_table_query = """
 CREATE TABLE IF NOT EXISTS filtered_store_info (
+
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     상호명 VARCHAR(255),
     상권업종대분류명 VARCHAR(255),
@@ -77,6 +79,7 @@ for _, row in filtered_df.iterrows():
     print(f"상호명: {row['상호명']}, 카테고리: {row['카테고리']}가 filtered_store_info에 삽입되었습니다.")
 
     # 사용자 데이터 생성
+
     email = fake.email()
     password = bcrypt.hashpw(fake.password(length=10).encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     phone = fake.phone_number()
