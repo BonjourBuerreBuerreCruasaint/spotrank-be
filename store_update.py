@@ -15,8 +15,8 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'y2kxtom16spu!',
-    'database': 'info'
+    'password': 'welcome1!',
+    'database': 'test_db'
 }
 
 @store_update_blueprint.route('/update-store', methods=['POST'])

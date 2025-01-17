@@ -6,11 +6,11 @@ import re
 
 # MySQL 데이터베이스 연결
 connection = mysql.connector.connect(
+    host='localhost',
+    user='root',
+    password='welcome1!',
+    database='test_db'
 
-    host='localhost',  # MySQL 호스트
-    user='root',  # MySQL 사용자 이름
-    password='Welcome1!',  # MySQL 비밀번호
-    database='test_db'  # 사용할 데이터베이스 이름
 )
 
 # SQL 쿼리를 사용하여 'filtered_store_info' 테이블 읽기
@@ -27,20 +27,34 @@ menu_dict = {
 
 # 랜덤 가격 생성 함수
 def random_price():
-    return int(random.randint(10, 500) * 100)
+    return random.randint(1000, 50000)
 
 # 랜덤 수량 생성 함수
 def random_count():
     return random.randint(1, 30)
 
-# 랜덤 주문 시간 생성 함수
-def random_order_time():
+# 랜덤 주문 시간 생성 (주 단위)
+def random_order_time_weekly():
     now = datetime.now()
+    start_week = now - timedelta(days=now.weekday())  # 월요일 기준
+    random_days = random.randint(0, 6)  # 7일 중 랜덤 선택
+    random_hour = random.randint(6, 23)  # 6시 ~ 23시
+    random_minute = random.randint(0, 59)
+    random_second = random.randint(0, 59)
+    return start_week + timedelta(days=random_days, hours=random_hour, minutes=random_minute, seconds=random_second)
 
-    random_days = random.randint(0, 365)
-    random_minutes = random.randint(0, 1440)
-    random_date = now - timedelta(days=random_days, minutes=random_minutes)
-    return random_date
+# 랜덤 주문 시간 생성 (월 단위)
+def random_order_time_monthly(month_offset):
+    now = datetime.now()
+    year = now.year + (now.month - 1 + month_offset) // 12
+    month = (now.month - 1 + month_offset) % 12 + 1
+    start_month = datetime(year, month, 1)
+    days_in_month = (start_month.replace(month=month % 12 + 1, day=1) - timedelta(days=1)).day
+    random_day = random.randint(1, days_in_month)
+    random_hour = random.randint(6, 23)  # 6시 ~ 23시
+    random_minute = random.randint(0, 59)
+    random_second = random.randint(0, 59)
+    return datetime(year, month, random_day, random_hour, random_minute, random_second)
 
 # 테이블 생성 함수
 def create_table(cursor, table_name, schema):
@@ -54,42 +68,49 @@ def insert_data(cursor, table_name, data, columns):
     query = f"INSERT INTO {table_name} ({columns_joined}) VALUES ({placeholders})"
     cursor.executemany(query, data)
 
-# MySQL 작업 시작
+# MySQL 작업
 cursor = connection.cursor()
 
-# 각 ID에 대해 테이블 생성 및 데이터 삽입
 for _, row in data.iterrows():
     store_id = row["id"]
     store_name = row["상호명"]
     sub_category = row["상권업종소분류명"]
 
-    # 메뉴 테이블 및 데이터 생성
+    # 메뉴 테이블 생성
     menu_table_name = f"menu_{store_id}"
-    menu_schema = "menu VARCHAR(255), price INT"
-    create_table(cursor, menu_table_name, menu_schema)
-
+    create_table(cursor, menu_table_name, "menu VARCHAR(255), price INT")
     menus = menu_dict.get(sub_category, ["기타 메뉴"])
     if "기타 메뉴" in menus:
-        continue  # 기타 메뉴만 있는 경우 건너뜀
+        continue
 
     menu_data = [(menu, random_price()) for menu in menus]
+    menu_price_map = {menu: price for menu, price in menu_data}
     insert_data(cursor, menu_table_name, menu_data, ["menu", "price"])
 
-    # 주문 테이블 및 데이터 생성
+    # 주문 테이블 생성
     order_table_name = f"order_{store_id}"
-    order_schema = "menu VARCHAR(255), price INT, order_time DATETIME, count INT"
-    create_table(cursor, order_table_name, order_schema)
+    create_table(cursor, order_table_name, "menu VARCHAR(255), price INT, order_time DATETIME, count INT")
 
-    order_data = [
-        (random.choice(menus), random_price(), random_order_time(), random_count())
-        for _ in range(100)
-    ]
-    insert_data(cursor, order_table_name, order_data, ["menu", "price", "order_time", "count"])
+    # 12개월 데이터 생성
+    for month_offset in range(12):
+        # 주 단위 데이터 (30개)
+        weekly_orders = [
+            (menu, menu_price_map[menu], random_order_time_weekly(), random_count())
+            for menu in random.choices(menus, k=30)
+        ]
+        insert_data(cursor, order_table_name, weekly_orders, ["menu", "price", "order_time", "count"])
 
-# 변경 사항 커밋 및 연결 종료
+        # 월 단위 데이터 (30개)
+        monthly_orders = [
+            (menu, menu_price_map[menu], random_order_time_monthly(month_offset), random_count())
+            for menu in random.choices(menus, k=30)
+        ]
+        insert_data(cursor, order_table_name, monthly_orders, ["menu", "price", "order_time", "count"])
+
+# 커밋 및 종료
 connection.commit()
 cursor.close()
 connection.close()
 
+print("12개월치 데이터가 성공적으로 생성되었습니다.")
 
-print(f"메뉴 및 주문 데이터가 '{menu_table_name}'와 '{order_table_name}' 테이블에 저장되었습니다.")

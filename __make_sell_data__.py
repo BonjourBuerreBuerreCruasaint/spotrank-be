@@ -10,13 +10,16 @@ make_sell_data_blueprint = Blueprint('make_sell_data', __name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Welcome1!',
-    'database': 'test_db'
+    'password': 'welcome1!',
+    'database': 'test_db',
+    'auth_plugin': 'mysql_native_password'
+
 }
 
 
 # MySQL 테이블 생성 함수
 def create_sales_table():
+    conn = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
@@ -38,18 +41,19 @@ def create_sales_table():
     except Exception as e:
         print(f"Error creating table: {e}")
     finally:
-        if conn.is_connected():
+        if conn and conn.is_connected():
             cursor.close()
             conn.close()
 
 # 모든 order_* 테이블을 sales_data 테이블로 합치는 함수
 def merge_order_tables():
+    conn = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
 
         # order_* 테이블 이름 가져오기
-        cursor.execute("SHOW TABLES LIKE 'order_%'")
+        cursor.execute("SHOW TABLES WHERE Tables_in_test_db LIKE 'order_%'")
         order_tables = [row[0] for row in cursor.fetchall()]
 
         if not order_tables:
@@ -80,7 +84,7 @@ def merge_order_tables():
     except Exception as e:
         print(f"Error merging order tables: {e}")
     finally:
-        if conn.is_connected():
+        if conn and conn.is_connected():
             cursor.close()
             conn.close()
 

@@ -16,7 +16,8 @@ business_join_blueprint = Blueprint('business_join', __name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Welcome1!',
+    'password': 'welcome1!',
+
     'database': 'test_db'
 }
 
