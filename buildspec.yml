@@ -10,7 +10,7 @@ env:
 phases:
   install:
     runtime-versions:
-      python: 3.9  # Python version specified
+      python: 3.9  # Python 버전 지정
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
@@ -18,9 +18,9 @@ phases:
       - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.6/2023-10-17/bin/linux/amd64/kubectl
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/kubectl
-      - mkdir ~/.kube
+      - mkdir -p ~/.kube
       - echo Configuring kubectl for EKS...
-      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name eks  # Replace 'eks' with your actual EKS cluster name
+      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name eks  # 'eks'는 실제 클러스터 이름으로 교체
       - kubectl get pod --all-namespaces
 
   pre_build:
@@ -31,22 +31,27 @@ phases:
 
   build:
     commands:
-      - echo Building Flask App...
+      - echo Flask 앱 빌드 중...
       - python -m compileall .
-      - echo Building Docker image...
+      - echo Docker 이미지 빌드 중...
       - docker build --no-cache --platform=linux/amd64 -t $IMAGE_REPO_NAME:$IMAGE_TAG . || (echo "Docker build failed"; exit 1)
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
 
   post_build:
     commands:
-      - echo Build completed on `date`
+      - echo 빌드 완료: `date`
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
-      - echo Deploying to EKS...
+      - echo EKS에 배포 중...
       - AWS_ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - DATE=$(date)
       - sed -i.bak 's#AWS_ECR_URI#'"$AWS_ECR_URI"'#' ./EKS/deployment.yaml
       - sed -i.bak 's#DATE_STRING#'"$DATE"'#' ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/service.yaml
+
+artifacts:
+  files:
+    - EKS/deployment.yaml
+    - EKS/service.yaml
