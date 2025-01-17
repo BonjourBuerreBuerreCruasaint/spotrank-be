@@ -46,7 +46,7 @@ phases:
       - echo Deploying to EKS...
       - AWS_ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - DATE=$(date)
-      - sed -i.bak 's#AWS_ECR_URI#'"$AWS_ECR_URI"'#' ./EKS/Deployment.yaml
-      - sed -i.bak 's#DATE_STRING#'"$DATE"'#' ./EKS/Deployment.yaml
-      - kubectl apply -f ./EKS/Deployment.yaml
-      - kubectl apply -f ./EKS/Service.yaml
+      - sed -i.bak 's#AWS_ECR_URI#'"$AWS_ECR_URI"'#' ./EKS/deployment.yaml
+      - sed -i.bak 's#DATE_STRING#'"$DATE"'#' ./EKS/deployment.yaml
+      - kubectl apply -f ./EKS/deployment.yaml
+      - kubectl apply -f ./EKS/service.yaml
