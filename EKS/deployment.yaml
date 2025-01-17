@@ -6,14 +6,14 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: spotrank-be
+      app: spotrank-be2
   template:
     metadata:
       labels:
-        app: spotrank-be
+        app: spotrank-be2
     spec:
       containers:
-        - name: spotrank-be
+        - name: spotrank-be2
           image: 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:test1  # 이미지 URI는 `buildspec.yml`에서 동적으로 치환됩니다.
           ports:
             - containerPort: 5000
