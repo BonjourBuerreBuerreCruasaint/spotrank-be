@@ -11,7 +11,7 @@ CORS(api_blueprint, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 db_config = {
     'host': 'localhost',
     'user': 'root',  # MySQL 사용자 이름
-    'password': 'y2kxtom16spu!',  # MySQL 비밀번호
+    'password': 'welcome!',  # MySQL 비밀번호
     'database': 'real_time_rank'
 }
 

@@ -1,44 +1,45 @@
 import pandas as pd
 import pymysql
 from faker import Faker
-import random
-from datetime import datetime, timedelta
 import bcrypt
 
 # Faker 인스턴스 생성
 fake = Faker()
-# MySQL 데이터베이스 연결
+
+# MySQL 데이터베이스 연결 (pymysql 사용)
 connection = pymysql.connect(
-    host='localhost',  # MySQL 호스트
-    user='root',  # MySQL 사용자 이름
-    password='y2kxtom16spu!',  # MySQL 비밀번호
-    database='test_db'  # 사용할 데이터베이스 이름
+    host='localhost',
+    user='root',
+    password='welcome1!',
+    database='test_db',
+    charset='utf8mb4'
 )
 
-# SQL 쿼리를 사용하여 'store_info' 테이블 읽기
+# 'store_info' 테이블에서 데이터 읽기
 query = "SELECT * FROM store_info"
+df = pd.read_sql(query, con=connection)
 
-# pandas를 사용하여 SQL 쿼리 결과를 DataFrame으로 변환
-df = pd.read_sql(query, connection)
-
-# '상권업종대분류명' 컬럼에서 '식당', '카페', '한식', '음식', '커피'를 포함하는 행만 필터링
+# '상권업종대분류명' 필터링
 filtered_df = df[df['상권업종대분류명'].str.contains('식당|카페|한식|음식|커피', na=False)]
 
-# '시군구명' 컬럼에서 특정 지역(서대문구, 마포구)을 포함하는 행만 필터링
+# '시군구명' 필터링
 filtered_df = filtered_df[filtered_df['시군구명'].str.contains('서대문구|마포구', na=False)]
 
-# 필요한 컬럼만 선택 (상호명, 상권업종대분류명, 상권업종중분류명, 상권업종소분류명, 시도명, 시군구명, 행정동명, 법정동명, 도로명주소, 경도, 위도)
+# 필요한 컬럼만 선택
 columns_to_keep = ['상호명', '상권업종대분류명', '상권업종중분류명', '상권업종소분류명',
                    '시도명', '시군구명', '행정동명', '법정동명', '도로명주소', '경도', '위도']
 filtered_df = filtered_df[columns_to_keep]
 
-# 필터링된 데이터를 MySQL 테이블에 저장
-filtered_table_name = 'filtered_store_info'
+# 카테고리 설정
+filtered_df['카테고리'] = filtered_df['상권업종소분류명'].fillna('').apply(
+    lambda x: '카페' if '카페' in x else '음식점'
+)
 
-# 테이블 생성 쿼리 (필요한 경우에만 실행)
 cursor = connection.cursor()
-create_table_query = f"""
-CREATE TABLE IF NOT EXISTS {filtered_table_name} (
+
+# 테이블 생성 쿼리
+create_table_query = """
+CREATE TABLE IF NOT EXISTS filtered_store_info (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     상호명 VARCHAR(255),
     상권업종대분류명 VARCHAR(255),
@@ -50,36 +51,49 @@ CREATE TABLE IF NOT EXISTS {filtered_table_name} (
     법정동명 VARCHAR(255),
     도로명주소 VARCHAR(255),
     경도 FLOAT,
-    위도 FLOAT
+    위도 FLOAT,
+    카테고리 VARCHAR(255)
 );
 """
 cursor.execute(create_table_query)
 
-# DataFrame 데이터를 MySQL 테이블에 삽입
+# 데이터 삽입
 for _, row in filtered_df.iterrows():
+    # 각 값들을 튜플로 변환
+    row_values = (
+        row['상호명'], row['상권업종대분류명'], row['상권업종중분류명'],
+        row['상권업종소분류명'], row['시도명'], row['시군구명'],
+        row['행정동명'], row['법정동명'], row['도로명주소'],
+        row['경도'], row['위도'], row['카테고리']
+    )
+
+    # 상점 데이터 삽입
+    insert_query = """
+    INSERT INTO filtered_store_info (상호명, 상권업종대분류명, 상권업종중분류명, 상권업종소분류명, 
+                                     시도명, 시군구명, 행정동명, 법정동명, 도로명주소, 경도, 위도, 카테고리)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    cursor.execute(insert_query, row_values)
+    print(f"상호명: {row['상호명']}, 카테고리: {row['카테고리']}가 filtered_store_info에 삽입되었습니다.")
+
+    # 사용자 데이터 생성
     email = fake.email()
-    password = fake.password(length=10)
+    password = bcrypt.hashpw(fake.password(length=10).encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     phone = fake.phone_number()
     birthdate = fake.date_of_birth(minimum_age=18, maximum_age=65).strftime('%Y-%m-%d')
     username = fake.user_name()
 
-    insert_query = f"""
-    INSERT INTO {filtered_table_name} (상호명, 상권업종대분류명, 상권업종중분류명, 상권업종소분류명, 시도명, 시군구명, 행정동명, 법정동명, 도로명주소, 경도, 위도)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-
-    cursor.execute(insert_query, tuple(row))
-
+    # 사용자 데이터 삽입
     insert_user_query = """
         INSERT INTO users (email, password, phone, birthdate, username)
         VALUES (%s, %s, %s, %s, %s)
         """
     cursor.execute(insert_user_query, (email, password, phone, birthdate, username))
+    print(f"사용자 이메일: {email}, 사용자 이름: {username}가 users에 삽입되었습니다.")
 
 # 변경 사항 커밋
 connection.commit()
-
-print(f"필터링된 데이터가 MySQL 테이블 '{filtered_table_name}'에 저장되었습니다.")
+print(f"필터링된 데이터가 MySQL 테이블 'filtered_store_info'에 저장되었습니다.")
 
 # 연결 종료
 cursor.close()
