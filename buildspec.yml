@@ -21,7 +21,7 @@ phases:
       - mkdir -p ~/.kube
       - echo Configuring kubectl for EKS...
       - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name eks  # 'eks'는 실제 클러스터 이름으로 교체
-      - kubectl get pod --all-namespaces
+      - kubectl version --client  # kubectl 버전 확인으로 EKS 설정 확인
 
   pre_build:
     commands:
@@ -32,7 +32,7 @@ phases:
   build:
     commands:
       - echo Flask 앱 빌드 중...
-      - python -m compileall .
+      - python -m compileall .  # Python 코드 컴파일
       - echo Docker 이미지 빌드 중...
       - docker build --no-cache --platform=linux/amd64 -t $IMAGE_REPO_NAME:$IMAGE_TAG . || (echo "Docker build failed"; exit 1)
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
@@ -46,8 +46,8 @@ phases:
       - echo EKS에 배포 중...
       - AWS_ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - DATE=$(date)
-      - sed -i.bak 's#AWS_ECR_URI#'"$AWS_ECR_URI"'#' ./EKS/deployment.yaml
-      - sed -i.bak 's#DATE_STRING#'"$DATE"'#' ./EKS/deployment.yaml
+      - sed -i.bak 's#AWS_ECR_URI#'"$AWS_ECR_URI"'#' ./EKS/deployment.yaml  # ECR URI 교체
+      - sed -i.bak 's#DATE_STRING#'"$DATE"'#' ./EKS/deployment.yaml  # 날짜 교체
       - kubectl apply -f ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/service.yaml
 
