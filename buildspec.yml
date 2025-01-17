@@ -34,7 +34,7 @@ phases:
       - echo "Building Flask app..."
       - python -m compileall .
       - echo "Building Docker image..."
-      - docker build --no-cache --platform=linux/amd64 -t $IMAGE_REPO_NAME:$IMAGE_TAG . || (echo "Docker build failed"; exit 1)
+      - docker build --no-cache --platform=linux/amd64 -t $IMAGE_REPO_NAME:$IMAGE_TAG .
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
 
@@ -44,8 +44,8 @@ phases:
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
       - echo "Deploying to EKS..."
-      - AWS_ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - DATE=$(date)
+      - AWS_ECR_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
+      - DATE="$(date)"
       - sed -i.bak "s#AWS_ECR_URI#${AWS_ECR_URI}#" ./EKS/deployment.yaml
       - sed -i.bak "s#DATE_STRING#${DATE}#" ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/deployment.yaml
