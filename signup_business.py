@@ -5,10 +5,11 @@ import os
 import mysql.connector
 import uuid  # 고유 파일 이름 생성을 위한 모듈
 
-# # Flask 앱 인스턴스
+# Flask 앱 인스턴스
 app = Flask(__name__)
 
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+API_KEY = "650d33464694cb373cf53be21033be2b"
 
 business_join_blueprint = Blueprint('business_join', __name__)
 
@@ -17,9 +18,39 @@ db_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'welcome1!',
-
     'database': 'test_db'
 }
+
+def get_coordinates_from_address(address):
+    """
+    도로명 주소를 입력받아 경도와 위도를 반환하는 함수
+    :param address: 변환할 도로명 주소 (str)
+    :return: 경도와 위도 (tuple) 또는 None
+    """
+    url = "https://dapi.kakao.com/v2/local/search/address.json"
+    headers = {
+        "Authorization": f"KakaoAK {API_KEY}",
+        "Origin": "http://localhost:3000",  # 정확한 URL과 포트
+        "KA": "1"
+    }
+    params = {
+        "query": address
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        result = response.json()
+        if result["documents"]:
+            first_result = result["documents"][0]
+            longitude = float(first_result["x"])  # 경도
+            latitude = float(first_result["y"])  # 위도
+            return longitude, latitude
+        else:
+            print("해당 주소에 대한 결과를 찾을 수 없습니다.")
+            return None
+    else:
+        print(f"API 요청 실패: {response.status_code}, {response.text}")
+        return None
 
 def get_db_connection():
     try:
@@ -27,43 +58,6 @@ def get_db_connection():
     except mysql.connector.Error as err:
         print(f"MySQL 연결 실패: {err}")
         raise
-
-def get_user_id_by_email(cursor, email):
-    """users 테이블에서 이메일로 userId 가져오기"""
-    cursor.execute("SELECT userId FROM users WHERE email = %s", (email,))
-    result = cursor.fetchone()
-    if result:
-        return result[0]  # userId 반환
-    return None
-
-def create_dynamic_tables(cursor, store_id):
-    """동적으로 테이블 생성"""
-    table_queries = [
-        f"""
-        CREATE TABLE IF NOT EXISTS Sales_{store_id} (
-            sales_ID INT NOT NULL AUTO_INCREMENT,
-            store_name VARCHAR(255) NOT NULL,
-            timestamp DATETIME NOT NULL,
-            menu VARCHAR(255) NOT NULL,
-            quantity INT NOT NULL DEFAULT 0,
-            revenue DECIMAL(10, 2) NOT NULL,
-            PRIMARY KEY (sales_ID)
-        )
-        """,
-        f"""
-        CREATE TABLE IF NOT EXISTS Rank_{store_id} (
-            rank_ID INT NOT NULL AUTO_INCREMENT,
-            store_name VARCHAR(255) NOT NULL,
-            hourly_sales DECIMAL(10, 2) NOT NULL,
-            hourly_menu VARCHAR(255) NOT NULL,
-            latitude DECIMAL(10, 6) NOT NULL,
-            longitude DECIMAL(10, 6) NOT NULL,
-            PRIMARY KEY (rank_ID)
-        )
-        """
-    ]
-    for query in table_queries:
-        cursor.execute(query)
 
 # 라우팅: 사업자 회원가입
 @business_join_blueprint.route('/business-signup', methods=['POST', 'OPTIONS'])
@@ -78,18 +72,31 @@ def business_signup():
     store_name = data.get('storeName')
     address = data.get('address')
     category = data.get('category')
+    sub_category = data.get('subCategory')  # 추가된 필드
     description = data.get('description')
+    opening_date = data.get('openingDate')
     store_phone_number = data.get('storePhoneNumber')
-    user_email = data.get('userEmail')  # 사용자 이메일 (추가됨)
 
-    if not all([business_number, store_name, address, category, user_email]):
+    coordinate = get_coordinates_from_address(address)
+
+    if not all([business_number, store_name, address, category]):
         return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
+
+    if coordinate is None:
+        return jsonify({'message': '유효한 주소가 아닙니다.'}), 400
+
+    # 파일 저장
+    image_filename = None
+    if file:
+        image_filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(image_filename)
 
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
 
         # users 테이블에서 userId 가져오기
+        user_email = data.get('userEmail')  # 사용자 이메일 (추가됨)
         user_id = get_user_id_by_email(cursor, user_email)
         if not user_id:
             return jsonify({'message': '해당 이메일로 등록된 사용자가 없습니다.'}), 404
@@ -111,7 +118,7 @@ def business_signup():
         INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
         VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
                        (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
-        
+
         connection.commit()
 
         # 삽입된 사업자의 ID 가져오기 (Auto Increment된 PK)
