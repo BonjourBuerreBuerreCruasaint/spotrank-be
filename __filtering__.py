@@ -89,6 +89,24 @@ for _, row in filtered_df.iterrows():
     intro_text = fake.text(max_nb_chars=200)
     image_url = f"https://via.placeholder.com/150?text={fake.word().capitalize()}"
     # Faker 데이터를 생성
+    # 각 값들을 튜플로 변환
+    row_values = (
+        row['상호명'], row['상권업종대분류명'], row['상권업종중분류명'],
+        row['상권업종소분류명'], row['시도명'], row['시군구명'],
+        row['행정동명'], row['법정동명'], row['도로명주소'],
+        row['경도'], row['위도'], row['카테고리']
+    )
+
+    # 상점 데이터 삽입
+    insert_query = """
+    INSERT INTO filtered_store_info (상호명, 상권업종대분류명, 상권업종중분류명, 상권업종소분류명, 
+                                     시도명, 시군구명, 행정동명, 법정동명, 도로명주소, 경도, 위도, 카테고리)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    cursor.execute(insert_query, row_values)
+    print(f"상호명: {row['상호명']}, 카테고리: {row['카테고리']}가 filtered_store_info에 삽입되었습니다.")
+
+    # 사용자 데이터 생
     email = fake.email()
     password = bcrypt.hashpw(fake.password(length=10).encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     phone = fake.phone_number()

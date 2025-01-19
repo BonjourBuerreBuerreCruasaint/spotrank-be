@@ -13,7 +13,9 @@ db_config = {
     'password': 'welcome1!',
     'database': 'test_db',
     'auth_plugin': 'mysql_native_password'
+
 }
+
 
 # MySQL 테이블 생성 함수
 def create_sales_table():
@@ -96,6 +98,7 @@ def merge_tables_endpoint():
     return jsonify({"message": "All order_* tables merged into sales_data."})
 
 if __name__ == "__main__":
+
     # sales_data 테이블 생성
     create_sales_table()
 

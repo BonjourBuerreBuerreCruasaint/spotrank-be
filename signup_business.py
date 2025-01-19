@@ -1,8 +1,9 @@
-import requests
+import boto3
 from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 import os
 import mysql.connector
+import uuid  # 고유 파일 이름 생성을 위한 모듈
 
 # Flask 앱 인스턴스
 app = Flask(__name__)
@@ -12,13 +13,13 @@ API_KEY = "650d33464694cb373cf53be21033be2b"
 
 business_join_blueprint = Blueprint('business_join', __name__)
 
+# MySQL 설정
 db_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'welcome1!',
     'database': 'test_db'
 }
-
 
 def get_coordinates_from_address(address):
     """
@@ -49,7 +50,6 @@ def get_coordinates_from_address(address):
             return None
     else:
         print(f"API 요청 실패: {response.status_code}, {response.text}")
-        print(f"사용된 헤더: {headers}")
         return None
 
 def get_db_connection():
@@ -59,13 +59,8 @@ def get_db_connection():
         print(f"MySQL 연결 실패: {err}")
         raise
 
-# 파일 업로드를 위한 폴더 설정
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 # 라우팅: 사업자 회원가입
-@business_join_blueprint.route('/business-signup', methods=['POST','OPTIONS'])
+@business_join_blueprint.route('/business-signup', methods=['POST', 'OPTIONS'])
 def business_signup():
     if request.method == 'OPTIONS':
         return '', 200
@@ -81,6 +76,7 @@ def business_signup():
     description = data.get('description')
     opening_date = data.get('openingDate')
     store_phone_number = data.get('storePhoneNumber')
+
     coordinate = get_coordinates_from_address(address)
 
     if not all([business_number, store_name, address, category]):
@@ -99,10 +95,38 @@ def business_signup():
         connection = get_db_connection()
         cursor = connection.cursor()
 
+        # users 테이블에서 userId 가져오기
+        user_email = data.get('userEmail')  # 사용자 이메일 (추가됨)
+        user_id = get_user_id_by_email(cursor, user_email)
+        if not user_id:
+            return jsonify({'message': '해당 이메일로 등록된 사용자가 없습니다.'}), 404
+
+        # S3에 파일 업로드
+        image_url = None
+        if file:
+            unique_filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+            s3.upload_fileobj(
+                file,
+                S3_BUCKET,
+                unique_filename,
+                ExtraArgs={"ACL": "public-read", "ContentType": file.content_type}
+            )
+            image_url = f"{S3_LOCATION}{unique_filename}"
+
+        # 사업자 정보 삽입
         cursor.execute("""
-        INSERT INTO stores(상호명, 도로명주소, 카테고리, 상권업종소분류명,경도, 위도, 소개글, 이미지, 개업일, 가게전화번호)
-        VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-        (store_name, address, category,sub_category, coordinate[0], coordinate[1], description, image_filename, opening_date, store_phone_number))
+        INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
+        VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
+                       (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
+
+        connection.commit()
+
+        # 삽입된 사업자의 ID 가져오기 (Auto Increment된 PK)
+        store_id = cursor.lastrowid
+
+        # 동적 테이블 생성
+        create_dynamic_tables(cursor, store_id)
+
         connection.commit()
         cursor.close()
         connection.close()
