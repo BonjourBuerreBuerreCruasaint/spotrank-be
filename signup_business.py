@@ -117,10 +117,6 @@ def business_signup():
 
         # 사업자 정보 삽입
         cursor.execute("""
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
         INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
         VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
                        (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
@@ -133,13 +129,8 @@ def business_signup():
         # 동적 테이블 생성
         create_dynamic_tables(cursor, store_id)
 
-<<<<<<< HEAD
-=======
         INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
         VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
         connection.commit()
         cursor.close()
         connection.close()
