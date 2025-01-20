@@ -74,20 +74,12 @@ def business_signup():
     category = data.get('category')
     sub_category = data.get('subCategory')  # 추가된 필드
     description = data.get('description')
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
     opening_date = data.get('openingDate')
     store_phone_number = data.get('storePhoneNumber')
 
     coordinate = get_coordinates_from_address(address)
-<<<<<<< HEAD
-=======
+
     store_phone_number = data.get('storePhoneNumber')
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
 
     if not all([business_number, store_name, address, category]):
         return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
