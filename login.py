@@ -17,7 +17,7 @@ def get_db_connection():
     return pymysql.connect(
         host='localhost',
         user='root',
-        password='y2kxtom16spu!',
+        password='welcome1!',
         database='test_db',
         cursorclass=pymysql.cursors.DictCursor
     )
@@ -48,9 +48,9 @@ def login():
             user = cursor.fetchone()
 
             if user:
-                stored_hashed_password = user['password'].encode('utf-8')
-                if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
-
+                # stored_hashed_password = user['password'].encode('utf-8')
+                # if bcrypt.checkpw(password.encode('utf-8'), stored_hashed_password):
+                if password == user['password']:
                     return jsonify({"message": "로그인 성공", "user_id": user['id']}), 200
                 else:
                     return jsonify({"error": "비밀번호가 잘못되었습니다"}), 401
