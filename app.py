@@ -1,6 +1,7 @@
 import secrets
 # from dotenv import load_dotenv    # .env 파일 로드
 # import os
+from datetime import timedelta
 
 from datetime import timedelta
 

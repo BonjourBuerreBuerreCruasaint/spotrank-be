@@ -13,7 +13,11 @@ def get_db_connection():
     return mysql.connector.connect(
         host='localhost',  # MySQL 호스트 (로컬 서버일 경우 'localhost' 사용)
         user='root',       # MySQL 사용자
+<<<<<<< HEAD
         password='welcome1!',  # MySQL 비밀번호
+=======
+        password='y2kxtom16spu!',  # MySQL 비밀번호
+>>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
         database='test_db'   # 사용할 데이터베이스
     )
 

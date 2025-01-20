@@ -74,10 +74,14 @@ def business_signup():
     category = data.get('category')
     sub_category = data.get('subCategory')  # 추가된 필드
     description = data.get('description')
+<<<<<<< HEAD
     opening_date = data.get('openingDate')
     store_phone_number = data.get('storePhoneNumber')
 
     coordinate = get_coordinates_from_address(address)
+=======
+    store_phone_number = data.get('storePhoneNumber')
+>>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
 
     if not all([business_number, store_name, address, category]):
         return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
@@ -115,6 +119,7 @@ def business_signup():
 
         # 사업자 정보 삽입
         cursor.execute("""
+<<<<<<< HEAD
         INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
         VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
                        (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
@@ -127,6 +132,10 @@ def business_signup():
         # 동적 테이블 생성
         create_dynamic_tables(cursor, store_id)
 
+=======
+        INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
+        VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
+>>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
         connection.commit()
         cursor.close()
         connection.close()
