@@ -8,7 +8,6 @@ import re
 connection = mysql.connector.connect(
     host='localhost',
     user='root',
-<<<<<<< HEAD
     password='welcome1!',
     database='test_db'
 
@@ -18,17 +17,6 @@ connection = mysql.connector.connect(
 query = "SELECT * FROM stores"
 
 
-=======
-    password='y2kxtom16spu!',
-    database='test_db'
-)
-
-# SQL 쿼리를 사용하여 'filtered_store_info' 테이블 읽기
-query = """
-    SELECT id, 상호명, 상권업종소분류명 
-    FROM filtered_store_info 
-"""
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
 data = pd.read_sql(query, connection)
 
 # 업종 소분류별 메뉴 목록 정의
@@ -57,11 +45,7 @@ menu_dict = {
 
 # 랜덤 가격 생성 함수
 def random_price():
-<<<<<<< HEAD
     return random.randint(1000, 50000)
-=======
-    return int(random.randint(10, 500) * 100)
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
 
 # 랜덤 수량 생성 함수
 def random_count():
@@ -70,7 +54,6 @@ def random_count():
 # 랜덤 주문 시간 생성 (주 단위)
 def random_order_time_weekly():
     now = datetime.now()
-<<<<<<< HEAD
     start_week = now - timedelta(days=now.weekday())  # 월요일 기준
     random_days = random.randint(0, 6)  # 7일 중 랜덤 선택
     random_hour = random.randint(6, 23)  # 6시 ~ 23시
@@ -91,18 +74,10 @@ def random_order_time_monthly(month_offset):
     random_second = random.randint(0, 59)
     return datetime(year, month, random_day, random_hour, random_minute, random_second)
 
-=======
-    random_days = random.randint(0, 365)
-    random_minutes = random.randint(0, 1440)
-    random_date = now - timedelta(days=random_days, minutes=random_minutes)
-    return random_date
-
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
 # 테이블 생성 함수
 def create_table(cursor, table_name, schema):
     create_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({schema})"
     cursor.execute(create_query)
-<<<<<<< HEAD
 
 # 데이터 삽입 함수
 def insert_data(cursor, table_name, data, columns):
@@ -114,26 +89,11 @@ def insert_data(cursor, table_name, data, columns):
 # MySQL 작업
 cursor = connection.cursor()
 
-=======
-
-# 데이터 삽입 함수
-def insert_data(cursor, table_name, data, columns):
-    placeholders = ', '.join(['%s'] * len(columns))
-    columns_joined = ', '.join(columns)
-    query = f"INSERT INTO {table_name} ({columns_joined}) VALUES ({placeholders})"
-    cursor.executemany(query, data)
-
-# MySQL 작업 시작
-cursor = connection.cursor()
-
-# 각 ID에 대해 테이블 생성 및 데이터 삽입
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
 for _, row in data.iterrows():
     store_id = row["id"]
     store_name = row["상호명"]
     sub_category = row["상권업종소분류명"]
 
-<<<<<<< HEAD
     # 메뉴 테이블 생성
     menu_table_name = f"menu_{store_id}"
     create_table(cursor, menu_table_name, "menu VARCHAR(255), price INT")
@@ -171,35 +131,3 @@ cursor.close()
 connection.close()
 
 print("12개월치 데이터가 성공적으로 생성되었습니다.")
-
-=======
-    # 메뉴 테이블 및 데이터 생성
-    menu_table_name = f"menu_{store_id}"
-    menu_schema = "menu VARCHAR(255), price INT"
-    create_table(cursor, menu_table_name, menu_schema)
-
-    menus = menu_dict.get(sub_category, ["기타 메뉴"])
-    if "기타 메뉴" in menus:
-        continue  # 기타 메뉴만 있는 경우 건너뜀
-
-    menu_data = [(menu, random_price()) for menu in menus]
-    insert_data(cursor, menu_table_name, menu_data, ["menu", "price"])
-
-    # 주문 테이블 및 데이터 생성
-    order_table_name = f"order_{store_id}"
-    order_schema = "menu VARCHAR(255), price INT, order_time DATETIME, count INT"
-    create_table(cursor, order_table_name, order_schema)
-
-    order_data = [
-        (random.choice(menus), random_price(), random_order_time(), random_count())
-        for _ in range(100)
-    ]
-    insert_data(cursor, order_table_name, order_data, ["menu", "price", "order_time", "count"])
-
-# 변경 사항 커밋 및 연결 종료
-connection.commit()
-cursor.close()
-connection.close()
-
-print("모든 메뉴 및 주문 데이터가 생성되었습니다.")
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
