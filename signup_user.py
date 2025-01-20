@@ -13,11 +13,7 @@ signup_blueprint = Blueprint('signup', __name__)
 db_config = {
     'host': "127.0.0.1",
     'user': 'root',
-<<<<<<< HEAD
     'password': 'welcome1!',
-=======
-    'password': 'y2kxtom16spu!',
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
     'database': 'test_db'
 
 }
