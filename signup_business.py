@@ -1,4 +1,3 @@
-import boto3
 from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 import os
