@@ -59,8 +59,13 @@ def create_processed_table():
         print(f"Error creating table: {e}")
     finally:
 
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
 # 데이터베이스에서 모든 `order_` 테이블 이름 가져오기
 def get_order_tables():
+    conn = None
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()

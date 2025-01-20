@@ -75,6 +75,7 @@ def business_signup():
     sub_category = data.get('subCategory')  # 추가된 필드
     description = data.get('description')
     opening_date = data.get('openingDate')
+
     store_phone_number = data.get('storePhoneNumber')
 
     coordinate = get_coordinates_from_address(address)
@@ -119,17 +120,19 @@ def business_signup():
         VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
                        (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
 
+
         connection.commit()
 
         # 삽입된 사업자의 ID 가져오기 (Auto Increment된 PK)
         store_id = cursor.lastrowid
 
         # 동적 테이블 생성
-        create_dynamic_tables(cursor, store_id)
-
-        connection.commit()
-        cursor.close()
-        connection.close()
+        # create_dynamic_tables(cursor, store_id)
+        # INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
+        # VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
+        # connection.commit()
+        # cursor.close()
+        # connection.close()
 
         return jsonify({'message': '사업자 정보가 성공적으로 등록되었습니다.'}), 201
     except mysql.connector.Error as err:
