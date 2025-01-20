@@ -131,3 +131,4 @@ cursor.close()
 connection.close()
 
 print("12개월치 데이터가 성공적으로 생성되었습니다.")
+

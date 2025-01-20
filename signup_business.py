@@ -1,3 +1,7 @@
+
+import boto3
+import requests
+
 from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 import os
@@ -74,11 +78,10 @@ def business_signup():
     sub_category = data.get('subCategory')  # 추가된 필드
     description = data.get('description')
     opening_date = data.get('openingDate')
+
     store_phone_number = data.get('storePhoneNumber')
 
     coordinate = get_coordinates_from_address(address)
-
-    store_phone_number = data.get('storePhoneNumber')
 
     if not all([business_number, store_name, address, category]):
         return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
@@ -98,32 +101,42 @@ def business_signup():
 
         # users 테이블에서 userId 가져오기
         user_email = data.get('userEmail')  # 사용자 이메일 (추가됨)
-        user_id = get_user_id_by_email(cursor, user_email)
-        if not user_id:
-            return jsonify({'message': '해당 이메일로 등록된 사용자가 없습니다.'}), 404
-
-        # S3에 파일 업로드
-        image_url = None
-        if file:
-            unique_filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-            s3.upload_fileobj(
-                file,
-                S3_BUCKET,
-                unique_filename,
-                ExtraArgs={"ACL": "public-read", "ContentType": file.content_type}
-            )
-            image_url = f"{S3_LOCATION}{unique_filename}"
+        # user_id = get_user_id_by_email(cursor, user_email)
+        # if not user_id:
+        #     return jsonify({'message': '해당 이메일로 등록된 사용자가 없습니다.'}), 404
+        #
+        # # S3에 파일 업로드
+        # image_url = None
+        # if file:
+        #     unique_filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        #     s3.upload_fileobj(
+        #         file,
+        #         S3_BUCKET,
+        #         unique_filename,
+        #         ExtraArgs={"ACL": "public-read", "ContentType": file.content_type}
+        #     )
+        #     image_url = f"{S3_LOCATION}{unique_filename}"
 
         # 사업자 정보 삽입
+        # cursor.execute("""
+        # INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
+        # VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
+        #                (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
+        #
+
+        ### 주헌 추가 부분
         cursor.execute("""
-        INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
-        VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
-                       (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
+        INSERT INTO stores(상호명, 도로명주소, 카테고리, 상권업종소분류명,경도, 위도, 소개글, 이미지, 개업일, 가게전화번호)
+        VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+        (store_name, address, category,sub_category, coordinate[0], coordinate[1], description, image_filename, opening_date, store_phone_number))
 
         connection.commit()
+        cursor.close()
+        connection.close()
+        ### 주헌 추가 부분 끝
 
         # 삽입된 사업자의 ID 가져오기 (Auto Increment된 PK)
-        store_id = cursor.lastrowid
+        #store_id = cursor.lastrowid
 
         # 동적 테이블 생성
         # create_dynamic_tables(cursor, store_id)
