@@ -1,6 +1,4 @@
 import random
-import pandas as pd
-import os
 import threading
 from flask import Flask, jsonify, Blueprint
 from datetime import datetime
@@ -12,72 +10,81 @@ make_sell_data_blueprint = Blueprint('make_sell_data', __name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'y2kxtom16spu!',
-    'database': 'info'
+    'password': 'welcome1!',
+    'database': 'test_db',
+    'auth_plugin': 'mysql_native_password'
+
 }
 
-# 데이터 저장소
-data_storage = []
 
-# 데이터 샘플 리스트
-PREDEFINED_DATA = [
-    {"owner_id": "owner001", "category_id": 1, "data": {"menu": "Pizza", "quantity": 2, "price": 15.5, "timestamp": "2024-12-27 14:00:00"}},
-    {"owner_id": "owner002", "category_id": 2, "data": {"상품명": "Latte", "개수": 1, "판매가격": 4.5, "판매시간": "2024-12-27 14:05:00"}},
-    {"owner_id": "owner003", "category_id": 1, "data": {"menu_name": "Burger", "quantity_sold": 3, "price_per_item": 10.0, "time": "2024-12-27 14:10:00"}},
-    {"owner_id": "owner001", "category_id": 1, "data": {"menu": "Salad", "quantity": 1, "price": 12.0, "timestamp": "2024-12-27 14:15:00"}},
-    {"owner_id": "owner002", "category_id": 2, "data": {"상품명": "Espresso", "개수": 2, "판매가격": 3.0, "판매시간": "2024-12-27 14:20:00"}}
-]
-
-# 데이터 저장 경로
-OUTPUT_DIR = "output_data"
-if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
-
-# 매출 데이터 랜덤 생성 및 전송 스레드
-def simulate_sales():
-    while True:
-        try:
-            # PREDEFINED_DATA에서 랜덤으로 하나 선택
-            selected_data = random.choice(PREDEFINED_DATA)
-            print(f"Selected data: {selected_data}")
-            data_storage.append(selected_data)  # 선택된 데이터를 data_storage에 추가
-        except Exception as e:
-            print(f"Error in simulate_sales: {e}")
-        threading.Event().wait(6)  # 6초 대기
-
-# 데이터 저장 함수
-def save_data_periodically():
-    while True:
-        threading.Event().wait(3600)  # 1시간 대기
-        if data_storage:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            csv_file = os.path.join(OUTPUT_DIR, f"sales_data_{timestamp}.csv")
-            json_file = os.path.join(OUTPUT_DIR, f"sales_data_{timestamp}.json")
-
-            # 데이터를 원본 컬럼 구조로 저장
-            raw_data = [{"owner_id": record["owner_id"], "category_id": record["category_id"], **record["data"]} for
-                        record in data_storage]
-
-            # DataFrame 생성
-            df = pd.DataFrame(raw_data)
-
-            # CSV 및 JSON으로 저장
-            df.to_csv(csv_file, index=False, encoding='utf-8-sig')
-            df.to_json(json_file, orient='records', force_ascii=False)
-
-            print(f"Data saved to {csv_file} and {json_file}")
-            data_storage.clear()  # 저장 후 데이터 초기화
-
-# 카테고리 이름 조회 함수
-def get_category_name(category_id):
+# MySQL 테이블 생성 함수
+def create_sales_table():
+    conn = None
     try:
         conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT category_name FROM categories WHERE category_id = %s", (category_id,))
-        result = cursor.fetchone()
-        return result['category_name'] if result else None
+        cursor = conn.cursor()
+
+        # sales_data 테이블 생성 쿼리
+        create_table_query = """
+        CREATE TABLE IF NOT EXISTS sales_data (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            menu_name VARCHAR(255),
+            price DECIMAL(10, 2),
+            order_time DATETIME,
+            quantity INT
+        );
+        """
+        cursor.execute(create_table_query)
+        conn.commit()
+        print("Table `sales_data` is ready.")
+    except Exception as e:
+        print(f"Error creating table: {e}")
     finally:
-        if conn.is_connected():
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+# 모든 order_* 테이블을 sales_data 테이블로 합치는 함수
+def merge_order_tables():
+    conn = None
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        # order_* 테이블 이름 가져오기
+        cursor.execute("SHOW TABLES WHERE Tables_in_test_db LIKE 'order_%'")
+        order_tables = [row[0] for row in cursor.fetchall()]
+
+        if not order_tables:
+            print("No order tables found.")
+            return
+
+        # 각 order 테이블 데이터를 sales_data에 삽입
+        for table_name in order_tables:
+            # user_id는 테이블 이름에서 추출
+            user_id = int(table_name.split('_')[1])
+
+            # order_* 테이블의 데이터 가져오기
+            select_query = f"SELECT menu, price, order_time, count FROM {table_name}"
+            cursor.execute(select_query)
+            orders = cursor.fetchall()
+
+            # sales_data 테이블에 삽입
+            insert_query = """
+                INSERT INTO sales_data (user_id, menu_name, price, order_time, quantity)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            sales_data = [
+                (user_id, row[0], row[1], row[2], row[3]) for row in orders
+            ]
+            cursor.executemany(insert_query, sales_data)
+            conn.commit()
+            print(f"Data from {table_name} merged into sales_data.")
+    except Exception as e:
+        print(f"Error merging order tables: {e}")
+    finally:
+        if conn and conn.is_connected():
             cursor.close()
             conn.close()
 
@@ -85,10 +92,15 @@ def get_category_name(category_id):
 app = Flask(__name__)
 app.register_blueprint(make_sell_data_blueprint)
 
+@app.route('/merge', methods=['GET'])
+def merge_tables_endpoint():
+    merge_order_tables()
+    return jsonify({"message": "All order_* tables merged into sales_data."})
+
 if __name__ == "__main__":
-    # 스레드 실행
-    threading.Thread(target=simulate_sales, daemon=True).start()
-    threading.Thread(target=save_data_periodically, daemon=True).start()
+
+    # sales_data 테이블 생성
+    create_sales_table()
 
     # Flask 애플리케이션 실행
     app.run(host="0.0.0.0", port=5000, debug=True)

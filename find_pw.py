@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, Blueprint
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 app = Flask(__name__)
+
 send_email_blueprint = Blueprint('send_email', __name__)
 
 # AWS SES 클라이언트 설정

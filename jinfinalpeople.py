@@ -4,6 +4,7 @@ import os
 from flask_cors import CORS
 
 app = Flask(__name__)
+
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)

@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, Blueprint
 import mysql.connector
-from flask_bcrypt import Bcrypt
 import bcrypt
 from flask_cors import CORS  # flask_cors에서 CORS 가져오기
 
@@ -14,8 +13,8 @@ signup_blueprint = Blueprint('signup', __name__)
 db_config = {
     'host': "127.0.0.1",
     'user': 'root',
-    'password': 'y2kxtom16spu!',
-    'database': 'info'
+    'password': 'welcome1!',
+    'database': 'test_db'
 
 }
 
