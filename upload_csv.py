@@ -5,7 +5,15 @@ import mysql.connector
 db_config = {
     'host': 'localhost',
     'user': 'root',
+<<<<<<< HEAD
     'password': 'welcome1!',
+=======
+<<<<<<< HEAD
+    'password': 'welcome1!',
+=======
+    'password': 'y2kxtom16spu!',
+>>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
+>>>>>>> 21ee967fa85bee3092a8d29b31c0e765ab383ab0
     'database': 'test_db'
 }
 

@@ -9,6 +9,7 @@ import uuid  # 고유 파일 이름 생성을 위한 모듈
 app = Flask(__name__)
 
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+API_KEY = "650d33464694cb373cf53be21033be2b"
 
 business_join_blueprint = Blueprint('business_join', __name__)
 
@@ -17,9 +18,43 @@ db_config = {
     'host': 'localhost',
     'user': 'root',
     'password': 'welcome1!',
+<<<<<<< HEAD
 
+=======
+>>>>>>> 21ee967fa85bee3092a8d29b31c0e765ab383ab0
     'database': 'test_db'
 }
+
+def get_coordinates_from_address(address):
+    """
+    도로명 주소를 입력받아 경도와 위도를 반환하는 함수
+    :param address: 변환할 도로명 주소 (str)
+    :return: 경도와 위도 (tuple) 또는 None
+    """
+    url = "https://dapi.kakao.com/v2/local/search/address.json"
+    headers = {
+        "Authorization": f"KakaoAK {API_KEY}",
+        "Origin": "http://localhost:3000",  # 정확한 URL과 포트
+        "KA": "1"
+    }
+    params = {
+        "query": address
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        result = response.json()
+        if result["documents"]:
+            first_result = result["documents"][0]
+            longitude = float(first_result["x"])  # 경도
+            latitude = float(first_result["y"])  # 위도
+            return longitude, latitude
+        else:
+            print("해당 주소에 대한 결과를 찾을 수 없습니다.")
+            return None
+    else:
+        print(f"API 요청 실패: {response.status_code}, {response.text}")
+        return None
 
 def get_db_connection():
     try:
@@ -28,6 +63,7 @@ def get_db_connection():
         print(f"MySQL 연결 실패: {err}")
         raise
 
+<<<<<<< HEAD
 def get_user_id_by_email(cursor, email):
     """users 테이블에서 이메일로 userId 가져오기"""
     cursor.execute("SELECT userId FROM users WHERE email = %s", (email,))
@@ -65,6 +101,8 @@ def create_dynamic_tables(cursor, store_id):
     for query in table_queries:
         cursor.execute(query)
 
+=======
+>>>>>>> 21ee967fa85bee3092a8d29b31c0e765ab383ab0
 # 라우팅: 사업자 회원가입
 @business_join_blueprint.route('/business-signup', methods=['POST', 'OPTIONS'])
 def business_signup():
@@ -78,18 +116,44 @@ def business_signup():
     store_name = data.get('storeName')
     address = data.get('address')
     category = data.get('category')
+    sub_category = data.get('subCategory')  # 추가된 필드
     description = data.get('description')
+<<<<<<< HEAD
+    opening_date = data.get('openingDate')
     store_phone_number = data.get('storePhoneNumber')
     user_email = data.get('userEmail')  # 사용자 이메일 (추가됨)
 
+<<<<<<< HEAD
     if not all([business_number, store_name, address, category, user_email]):
         return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
+=======
+    coordinate = get_coordinates_from_address(address)
+=======
+    store_phone_number = data.get('storePhoneNumber')
+>>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
+
+    if not all([business_number, store_name, address, category]):
+        return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
+
+    if coordinate is None:
+        return jsonify({'message': '유효한 주소가 아닙니다.'}), 400
+
+    # 파일 저장
+    image_filename = None
+    if file:
+        image_filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        file.save(image_filename)
+>>>>>>> 21ee967fa85bee3092a8d29b31c0e765ab383ab0
 
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
 
         # users 테이블에서 userId 가져오기
+<<<<<<< HEAD
+=======
+        user_email = data.get('userEmail')  # 사용자 이메일 (추가됨)
+>>>>>>> 21ee967fa85bee3092a8d29b31c0e765ab383ab0
         user_id = get_user_id_by_email(cursor, user_email)
         if not user_id:
             return jsonify({'message': '해당 이메일로 등록된 사용자가 없습니다.'}), 404
@@ -108,10 +172,18 @@ def business_signup():
 
         # 사업자 정보 삽입
         cursor.execute("""
+<<<<<<< HEAD
         INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
         VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
                        (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
         
+=======
+<<<<<<< HEAD
+        INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
+        VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
+                       (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
+
+>>>>>>> 21ee967fa85bee3092a8d29b31c0e765ab383ab0
         connection.commit()
 
         # 삽입된 사업자의 ID 가져오기 (Auto Increment된 PK)
@@ -120,6 +192,13 @@ def business_signup():
         # 동적 테이블 생성
         create_dynamic_tables(cursor, store_id)
 
+<<<<<<< HEAD
+=======
+=======
+        INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
+        VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
+>>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
+>>>>>>> 21ee967fa85bee3092a8d29b31c0e765ab383ab0
         connection.commit()
         cursor.close()
         connection.close()

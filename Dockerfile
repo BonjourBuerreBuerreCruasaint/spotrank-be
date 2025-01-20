@@ -8,8 +8,8 @@ WORKDIR /app
 COPY requirements.txt ./ 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# .env 파일을 컨테이너 안으로 복사
-COPY .env ./
+# .env 파일을 컨테이너로 복사
+COPY .env /app/.env
 
 # 애플리케이션 코드 복사
 COPY . ./
