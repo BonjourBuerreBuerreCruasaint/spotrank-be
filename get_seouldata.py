@@ -4,6 +4,7 @@ import json
 from flask_cors import CORS
 
 app = Flask(__name__)
+
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 get_seouldata_blueprint = Blueprint('get_seouldata', __name__)
@@ -32,10 +33,10 @@ def serve_seouldata():
                 invalid_entries.append(index)
 
         # 유효하지 않은 항목 로그 출력
-        if invalid_entries:
-            print(f"유효하지 않은 항목 발견: {len(invalid_entries)}개")
-            for idx in invalid_entries:
-                print(f" - Index {idx}: {data[idx]}")
+        # if invalid_entries:
+        #     print(f"유효하지 않은 항목 발견: {len(invalid_entries)}개")
+        #     for idx in invalid_entries:
+        #         print(f" - Index {idx}: {data[idx]}")
 
         return jsonify(data)  # JSON 데이터 반환
 

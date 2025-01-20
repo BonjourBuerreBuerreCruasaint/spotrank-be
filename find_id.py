@@ -3,6 +3,7 @@ import mysql.connector
 from flask_cors import CORS
 
 app = Flask(__name__)
+
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 find_id_blueprint = Blueprint('find_id', __name__)
@@ -13,7 +14,7 @@ def get_db_connection():
         host='localhost',  # MySQL 호스트 (로컬 서버일 경우 'localhost' 사용)
         user='root',       # MySQL 사용자
         password='y2kxtom16spu!',  # MySQL 비밀번호
-        database='info'   # 사용할 데이터베이스
+        database='test_db'   # 사용할 데이터베이스
     )
 
 @find_id_blueprint.route('/find-id', methods=['POST'])

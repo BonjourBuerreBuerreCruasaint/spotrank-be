@@ -1,16 +1,17 @@
-import mysql.connector
-import json
 from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
+import pymysql
 
 app = Flask(__name__)
+app.secret_key = 'Welcome1!'  # Flask 세션을 위한 비밀키 설정
+store_update_blueprint = Blueprint('store_update_blueprint', __name__)
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
-store_update_blueprint = Blueprint('store_update', __name__)
-
-
+# 데이터베이스 연결 설정
 db_config = {
     'host': 'localhost',
     'user': 'root',
@@ -18,77 +19,91 @@ db_config = {
     'database': 'info'
 }
 
-def get_db_connection():
-    try:
-        return mysql.connector.connect(**db_config)
-    except mysql.connector.Error as err:
-        print(f"MySQL 연결 실패: {err}")
-        raise
-
-# 업로드 파일 저장 경로 설정
-UPLOAD_FOLDER = 'uploads/'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['ALLOWED_EXTENSIONS'] = {'jpg', 'jpeg', 'png', 'gif'}
-
-
-# 파일 확장자가 허용된 것인지 체크하는 함수
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-
-# 가게 정보 수정 API 엔드포인트
 @store_update_blueprint.route('/update-store', methods=['POST'])
-def update_shop():
-    data = request.form
-    store_name = data.get('shopName')
-    store_phone_number = data.get('shopPhone')
-    store_address = data.get('shopAddress')
-    store_description = data.get('shopDescription')
-    store_images = request.files.getlist('shopImages')
+def update_store():
+    # 클라이언트에서 전달된 user_id 확인 (localStorage에서 가져오는 값을 Authorization에 포함)
+    user_id = request.headers.get('Authorization')  # Authorization 헤더에서 user_id 추출
+    if not user_id:
+        return jsonify({'error': '인증되지 않은 요청입니다. 다시 로그인해주세요.'}), 401
 
-    # 필수 입력값 확인
-    if not store_name or not store_phone_number or not store_address or not store_description or len(store_images) == 0:
-        return jsonify({"error": "모든 필드를 입력해야 합니다."}), 400
-
-    # 이미지 업로드 처리
-    image_paths = []
-    for image in store_images:
-        if image and allowed_file(image.filename):
-            filename = secure_filename(image.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            image.save(filepath)
-            image_paths.append(filepath)
-        else:
-            return jsonify({"error": "허용되지 않는 파일 형식입니다."}), 400
-
+    # 기존 데이터 가져오기
     try:
-        # 데이터베이스 연결
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        connection = pymysql.connect(**db_config)
+        with connection.cursor() as cursor:
+            select_query = """
+                SELECT 
+                    store_name, 
+                    store_phone_number, 
+                    address, 
+                    description, 
+                    image 
+                FROM stores 
+                WHERE id = %s
+            """
+            cursor.execute(select_query, (user_id,))
+            existing_data = cursor.fetchone()
 
-        # JSON으로 이미지 경로 저장
-        images_json = json.dumps(image_paths)
+            if not existing_data:
+                return jsonify({'error': '가게 정보를 찾을 수 없습니다.'}), 404
 
-        # SQL 업데이트 쿼리
-        update_query = """
-            UPDATE stores
-            SET name = %s, phone = %s, address = %s, description = %s, images = %s
-            WHERE id = %s
-        """
-        cursor.execute(update_query, (store_name, store_phone_number, store_address, store_description, images_json, store_id))
-        conn.commit()
+        connection.close()
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': '서버에서 문제가 발생했습니다.'}), 500
 
-        return jsonify({"message": "가게 정보가 수정되었습니다."}), 200
+    # 클라이언트에서 전달된 데이터
+    store_name = request.form.get('shopName') or existing_data[0]
+    store_phone_number = request.form.get('shopPhone') or existing_data[1]
+    address = request.form.get('shopAddress') or existing_data[2]
+    description = request.form.get('shopDescription') or existing_data[3]
 
-    except mysql.connector.Error as err:
-        print(f"데이터베이스 오류: {err}")
-        return jsonify({"error": "데이터베이스 오류가 발생했습니다."}), 500
+    shop_images = request.files.getlist('shopImages')
 
+    # 이미지 저장 경로
+    image_paths = []
+    for image in shop_images:
+        if image:
+            filename = secure_filename(image.filename)
+            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image.save(image_path)
+            image_paths.append(image_path)
+
+    # 데이터베이스 업데이트
+    try:
+        connection = pymysql.connect(**db_config)
+        with connection.cursor() as cursor:
+            # 가게 정보 업데이트
+            update_query = """
+                UPDATE stores
+                SET 
+                    store_name = %s,
+                    store_phone_number = %s,
+                    address = %s,
+                    description = %s,
+                    image = %s
+                WHERE id = %s
+            """
+            image_path = image_paths[0] if image_paths else existing_data[4]  # 첫 번째 이미지를 대표 이미지로 저장
+            cursor.execute(update_query, (
+                store_name,
+                store_phone_number,
+                address,
+                description,
+                image_path,
+                user_id
+            ))
+
+            connection.commit()
+
+        return jsonify({'message': '가게 정보가 성공적으로 업데이트되었습니다.'}), 200
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': '서버에서 문제가 발생했습니다.'}), 500
     finally:
-        cursor.close()
-        conn.close()
-app.register_blueprint(store_update_blueprint)
+        if connection:
+            connection.close()
 
 if __name__ == '__main__':
-    # 앱 실행
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
     app.run(debug=True)

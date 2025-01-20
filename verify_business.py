@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 
 app = Flask(__name__)
+app.secret_key='Welcome1!'
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 verify_business_blueprint = Blueprint('verify_business', __name__)
