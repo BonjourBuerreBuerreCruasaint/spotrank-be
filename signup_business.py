@@ -74,20 +74,12 @@ def business_signup():
     category = data.get('category')
     sub_category = data.get('subCategory')  # 추가된 필드
     description = data.get('description')
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
     opening_date = data.get('openingDate')
     store_phone_number = data.get('storePhoneNumber')
 
     coordinate = get_coordinates_from_address(address)
-<<<<<<< HEAD
-=======
+
     store_phone_number = data.get('storePhoneNumber')
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
 
     if not all([business_number, store_name, address, category]):
         return jsonify({'message': '모든 필드를 입력해야 합니다.'}), 400
@@ -125,10 +117,6 @@ def business_signup():
 
         # 사업자 정보 삽입
         cursor.execute("""
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
         INSERT INTO stores(user_id, business_number, store_name, address, category, description, image_url, store_phone_number)
         VALUES(%s, %s, %s, %s, %s, %s, %s, %s)""",
                        (user_id, business_number, store_name, address, category, description, image_url, store_phone_number))
@@ -139,18 +127,12 @@ def business_signup():
         store_id = cursor.lastrowid
 
         # 동적 테이블 생성
-        create_dynamic_tables(cursor, store_id)
-
-<<<<<<< HEAD
-=======
-        INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
-        VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
-=======
->>>>>>> 1b5facb905574e4ccadc1d61226ab5456df3d673
-        connection.commit()
-        cursor.close()
-        connection.close()
+        # create_dynamic_tables(cursor, store_id)
+        # INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
+        # VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
+        # connection.commit()
+        # cursor.close()
+        # connection.close()
 
         return jsonify({'message': '사업자 정보가 성공적으로 등록되었습니다.'}), 201
     except mysql.connector.Error as err:
