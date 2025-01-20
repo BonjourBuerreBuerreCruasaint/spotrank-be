@@ -46,5 +46,6 @@ app.register_blueprint(get_seouldata_blueprint,url_prefix='/api')
 app.register_blueprint(get_menu_data_blueprint, url_prefix='/api')
 app.register_blueprint(logout_blueprint, url_prefix='/api')
 
+
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000)  # 포트 지정 가능
