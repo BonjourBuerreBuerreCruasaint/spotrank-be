@@ -26,16 +26,16 @@ phases:
   build:
     commands:
       - echo Building and pushing Docker images to spotrank-ecr...
-      - echo Building auth service...
+      - echo Building backend service...
       - docker build -t backend:latest -f .Dockerfile .
-      - docker tag backend:latest 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/backend:latest
-      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:latest
+      - docker tag backend:latest 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend
+      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend
 
   post_build:
     commands:
       - echo Deploying services to EKS...
       - echo Deploying backend service...
-      - sed -i.bak 's#AWS_ECR_URI#440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:latest#g' ./EKS/deployment.yaml
+      - sed -i.bak 's#AWS_ECR_URI#440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend#g' ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/service.yaml
 
