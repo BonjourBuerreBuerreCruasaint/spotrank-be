@@ -127,13 +127,12 @@ def business_signup():
         store_id = cursor.lastrowid
 
         # 동적 테이블 생성
-        create_dynamic_tables(cursor, store_id)
-
-        INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
-        VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
-        connection.commit()
-        cursor.close()
-        connection.close()
+        # create_dynamic_tables(cursor, store_id)
+        # INSERT INTO stores(business_number, store_name, address, category, description, image, store_phone_number)
+        # VALUES(%s, %s, %s, %s, %s, %s,%s)""", (business_number, store_name, address, category, description, image_filename,store_phone_number))
+        # connection.commit()
+        # cursor.close()
+        # connection.close()
 
         return jsonify({'message': '사업자 정보가 성공적으로 등록되었습니다.'}), 201
     except mysql.connector.Error as err:
