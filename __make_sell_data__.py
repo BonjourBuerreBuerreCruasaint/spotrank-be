@@ -10,7 +10,6 @@ make_sell_data_blueprint = Blueprint('make_sell_data', __name__)
 db_config = {
     'host': 'localhost',
     'user': 'root',
-<<<<<<< HEAD
     'password': 'welcome1!',
     'database': 'test_db',
     'auth_plugin': 'mysql_native_password'
@@ -21,14 +20,6 @@ db_config = {
 # MySQL 테이블 생성 함수
 def create_sales_table():
     conn = None
-=======
-    'password': 'y2kxtom16spu!',
-    'database': 'test_db'
-}
-
-# MySQL 테이블 생성 함수
-def create_sales_table():
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
@@ -49,51 +40,6 @@ def create_sales_table():
         print("Table `sales_data` is ready.")
     except Exception as e:
         print(f"Error creating table: {e}")
-<<<<<<< HEAD
-=======
-    finally:
-        if conn.is_connected():
-            cursor.close()
-            conn.close()
-
-# 모든 order_* 테이블을 sales_data 테이블로 합치는 함수
-def merge_order_tables():
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-
-        # order_* 테이블 이름 가져오기
-        cursor.execute("SHOW TABLES LIKE 'order_%'")
-        order_tables = [row[0] for row in cursor.fetchall()]
-
-        if not order_tables:
-            print("No order tables found.")
-            return
-
-        # 각 order 테이블 데이터를 sales_data에 삽입
-        for table_name in order_tables:
-            # user_id는 테이블 이름에서 추출
-            user_id = int(table_name.split('_')[1])
-
-            # order_* 테이블의 데이터 가져오기
-            select_query = f"SELECT menu, price, order_time, count FROM {table_name}"
-            cursor.execute(select_query)
-            orders = cursor.fetchall()
-
-            # sales_data 테이블에 삽입
-            insert_query = """
-                INSERT INTO sales_data (user_id, menu_name, price, order_time, quantity)
-                VALUES (%s, %s, %s, %s, %s)
-            """
-            sales_data = [
-                (user_id, row[0], row[1], row[2], row[3]) for row in orders
-            ]
-            cursor.executemany(insert_query, sales_data)
-            conn.commit()
-            print(f"Data from {table_name} merged into sales_data.")
-    except Exception as e:
-        print(f"Error merging order tables: {e}")
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
     finally:
         if conn and conn.is_connected():
             cursor.close()
@@ -152,10 +98,7 @@ def merge_tables_endpoint():
     return jsonify({"message": "All order_* tables merged into sales_data."})
 
 if __name__ == "__main__":
-<<<<<<< HEAD
 
-=======
->>>>>>> d1942a47958c63f587da3cdb3c9ac3e2d7e7604a
     # sales_data 테이블 생성
     create_sales_table()
 
