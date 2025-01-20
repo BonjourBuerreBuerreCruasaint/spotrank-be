@@ -1,56 +1,45 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_DEFAULT_REGION: ap-northeast-2
-    AWS_ACCOUNT_ID: 440744225243
-    IMAGE_REPO_NAME: bbc
-    IMAGE_TAG: test1
-
 phases:
   install:
-    runtime-versions:
-      python: 3.9
     commands:
-      - echo "Logging in to Amazon ECR..."
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - echo "Installing kubectl..."
+      - echo Installing kubectl...
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
+      - AWS_REGION=$AWS_DEFAULT_REGION
       - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.6/2023-10-17/bin/linux/amd64/kubectl
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/kubectl
       - mkdir -p ~/.kube
-      - echo "Configuring kubectl for EKS..."
-      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name bbcEKS
+      - echo Setting up kubeconfig for EKS...
+      - aws eks --region ap-northeast-2 update-kubeconfig --name bbcEKS
+      - echo Verifying Kubernetes access...
       - kubectl version --client
 
   pre_build:
     commands:
-      - echo "Build started on 'date'"
-      - echo "Installing dependencies..."
-      - pip install -r requirements.txt
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com
+      - echo Pre-build step completed.
 
   build:
     commands:
-      - echo "Building Flask app..."
-      - python -m compileall .
-      - echo "Building Docker image..."
-      - docker build --no-cache --platform=linux/amd64 -t $IMAGE_REPO_NAME:$IMAGE_TAG .
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
+      - echo Building and pushing Docker images to spotrank-ecr...
+      - echo Building auth service...
+      - docker build -t backend:latest -f .Dockerfile .
+      - docker tag backend:latest 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/backend:latest
+      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:latest
 
   post_build:
     commands:
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
-      - echo "Deploying to EKS..."
-      - AWS_ECR_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
-      - DATE="$(date)"
-      # Kubernetes 배포 YAML 파일에서 이미지 URI와 날짜를 올바르게 교체
-      - echo "Updating Kubernetes deployment files with new image URI and date..."
-      - sed -i.bak "s#AWS_ECR_URI#${AWS_ECR_URI}#" ./EKS/deployment.yaml
-      - sed -i.bak "s#DATE_STRING#${DATE}#" ./EKS/deployment.yaml
+      - echo Deploying services to EKS...
+      - echo Deploying backend service...
+      - sed -i.bak 's#AWS_ECR_URI#440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:latest#g' ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/service.yaml
+
+      - echo Deployment completed on $(date).
 
 artifacts:
   files:
