@@ -58,6 +58,7 @@ def create_processed_table():
     except Exception as e:
         print(f"Error creating table: {e}")
     finally:
+
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
@@ -103,6 +104,7 @@ def process_table_data(table_name):
         data = pd.DataFrame(rows)
 
         # 데이터 처리
+
         for index, row in data.iterrows():
             processed_row = {
                 "store_name": row.get("store_name"),
