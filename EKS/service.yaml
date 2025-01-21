@@ -4,7 +4,7 @@ metadata:
   name: spotrank-be-service
 spec:
   selector:
-    app: spotrank-be2
+    app: spotrank-be
   ports:
     - protocol: TCP
       port: 5000
