@@ -13,7 +13,7 @@ colored_blueprint = Blueprint('colored_zone', __name__)
 def get_colored_zones():
     try:
         print("Loading CSV files...")
-        filtered_df = pd.read_csv('filtered_output1.csv')
+        filtered_df = pd.read_csv('filtered_output.csv')
         combined_df = pd.read_csv('combined_order.csv')
         print("CSV files loaded successfully.")
 
