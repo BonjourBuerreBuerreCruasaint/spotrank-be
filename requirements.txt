@@ -8,7 +8,7 @@ numpy==1.24.3
 pandas==1.5.3
 pymysql==1.0.3
 bcrypt~=4.2.1
-botocore~=1.35.92
+botocore>=1.29.92,<1.30.0
 gunicorn==20.1.0
 Faker~=33.3.1
-boto3==1.26.92 
+boto3==1.26.92
