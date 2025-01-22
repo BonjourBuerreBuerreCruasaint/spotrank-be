@@ -29,17 +29,18 @@ COPY .env /app/.env
 COPY . /app/
 
 # 로컬의 큰 데이터 파일들을 한 번에 복사 (여러 파일 포함)
-COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/data/* /app/data/
+# 먼저 빌드 컨텍스트로 파일을 복사한 후, 해당 파일들을 복사합니다
+COPY ./spotrank-be/data /app/data/
 
 # filtered_output 파일을 Docker 이미지에 추가
-COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/filtered_output /app/data/filtered_output.csv
+COPY ./spotrank-be/filtered_output /app/data/filtered_output.csv
 
-COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/combined_order.csv /app/data/combined_order.csv
+COPY ./spotrank-be/combined_order.csv /app/data/combined_order.csv
 
 # JinFinalPeople.csv 파일을 Docker 이미지에 추가
-COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/JinFinalPeople.csv /app/data/JinFinalPeople.csv
+COPY ./spotrank-be/JinFinalPeople.csv /app/data/JinFinalPeople.csv
 
-COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/modified_file.json /app/data/modified_file.json
+COPY ./spotrank-be/modified_file.json /app/data/modified_file.json
 
 # .env 파일을 환경 변수로 로드 (python-dotenv 사용)
 RUN pip install python-dotenv
