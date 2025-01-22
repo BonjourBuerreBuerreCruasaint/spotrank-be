@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # CORS 설정: 배포된 프론트엔드의 외부 IP나 도메인으로 변경
-CORS(app, resources={r"/api/*": {"origins": "http://a06c35398b3554cde90a91e66318d385-363860986.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://acde99d041b9e4508a570a83ad12fd84-1969489418.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
 
 jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)
 
