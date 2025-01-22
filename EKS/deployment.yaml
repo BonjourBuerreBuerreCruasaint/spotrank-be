@@ -19,10 +19,10 @@ spec:
     spec:
       containers:
         - name: spotrank-be2
-          image: 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend  # 이미지 URI는 `buildspec.yml`에서 동적으로 치환됩니다.
+          image: 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend
           ports:
             - containerPort: 5000
-          imagePullPolicy: Always  # 이미지 변경 시 최신 이미지를 사용
+          imagePullPolicy: Always
           env:
             - name: DATABASE_HOST
               value: "127.0.0.1"
@@ -32,7 +32,7 @@ spec:
               value: "password"
             - name: DATABASE_NAME
               value: "info"
-            - name: DATE  # EKS 배포 시점 정보를 저장
+            - name: DATE
               value: 'DATE_STRING'
           resources:
             requests:
@@ -41,3 +41,9 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "1000m"
+          volumeMounts:
+            - name: git-lfs-cache
+              mountPath: /app/git-lfs-cache
+      volumes:
+        - name: git-lfs-cache
+          emptyDir: {}
