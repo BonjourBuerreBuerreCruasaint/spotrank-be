@@ -1,28 +1,35 @@
 from flask import Flask, jsonify, Blueprint
-import os
+import boto3
 import json
 from flask_cors import CORS
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+# CORS 설정: 배포된 프론트엔드의 외부 IP나 도메인으로 변경
+CORS(app, resources={r"/api/*": {"origins": "http://a06c35398b3554cde90a91e66318d385-363860986.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
 
 get_seouldata_blueprint = Blueprint('get_seouldata', __name__)
+
+# S3에서 파일을 읽는 함수
+def read_json_from_s3(bucket_name, file_key):
+    s3_client = boto3.client('s3')
+    try:
+        # S3에서 JSON 파일 읽기
+        obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+        file_content = obj['Body'].read().decode('utf-8')  # 파일 내용 읽기
+        return json.loads(file_content)
+    except Exception as e:
+        print(f"Error reading {file_key} from S3: {e}")
+        return None
 
 @get_seouldata_blueprint.route('/seouldata', methods=['GET'])
 def serve_seouldata():
     try:
-        # 현재 파일의 디렉토리 경로
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(current_dir, 'modified_file.json')
+        # S3에서 modified_file.json 파일을 읽어옵니다.
+        data = read_json_from_s3('backendsource', 'modified_file.json')
 
-        # 파일 존재 여부 확인
-        if not os.path.exists(file_path):
-            return jsonify({"error": "파일이 존재하지 않습니다."}), 404
-
-        # JSON 파일 읽기
-        with open(file_path, 'r', encoding='utf-8') as file:
-            data = json.load(file)  # JSON 파일을 파싱
+        if data is None:
+            return jsonify({"error": "파일을 S3에서 읽는 중 오류 발생"}), 500
 
         # 데이터 검증: latitude, longitude 값 확인
         invalid_entries = []
@@ -31,12 +38,6 @@ def serve_seouldata():
             longitude = entry.get("longitude")
             if latitude is None or longitude is None:
                 invalid_entries.append(index)
-
-        # 유효하지 않은 항목 로그 출력
-        # if invalid_entries:
-        #     print(f"유효하지 않은 항목 발견: {len(invalid_entries)}개")
-        #     for idx in invalid_entries:
-        #         print(f" - Index {idx}: {data[idx]}")
 
         return jsonify(data)  # JSON 데이터 반환
 
@@ -47,6 +48,8 @@ def serve_seouldata():
     except Exception as e:
         # 일반 오류 처리
         return jsonify({"error": "JSON 파일을 제공하는 중 오류 발생", "details": str(e)}), 500
+
+app.register_blueprint(get_seouldata_blueprint)
 
 if __name__ == '__main__':
     # Flask 서버 실행

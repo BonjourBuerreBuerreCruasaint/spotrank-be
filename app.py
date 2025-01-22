@@ -28,7 +28,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # 세션 유지 �
 app.config['SESSION_COOKIE_SECURE'] = False  # 개발 환경에서는 False
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 세션 쿠키 SameSite 설정
 # CORS 설정
-CORS(app, resources={r"/api/*": {"origins": "http://aec41335b7c714107b83dfab098db982-2056293954.ap-northeast-2.elb.amazonaws.com/"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://a06c35398b3554cde90a91e66318d385-363860986.ap-northeast-2.elb.amazonaws.com/"}}, supports_credentials=True)
 
 app.register_blueprint(api_blueprint, url_prefix='/')
 app.register_blueprint(make_sell_data_blueprint, url_prefix='/make-sell-data')
