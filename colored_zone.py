@@ -18,7 +18,7 @@ def read_csv_from_s3(bucket_name, file_key):
     try:
         obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
         file_content = obj['Body'].read().decode('utf-8')
-        return pd.read_csv(StringIO(file_content))
+        return pd.read_csv(StringIO(file_content))  # CSV를 pandas DataFrame으로 읽기
     except Exception as e:
         print(f"Error reading {file_key} from S3: {e}")
         return None
@@ -69,10 +69,11 @@ def get_colored_zones():
 
         # Prepare final output without polygons and colors
         print("Preparing final output...")
+        # 필요한 열만 선택하고, JSON으로 변환
         output = grouped_df[['store_name', 'latitude', 'longitude', 'total_sales', 'menu', 'order_time']].to_dict(orient='records')
         print("Output prepared successfully.")
 
-        return jsonify(output)
+        return jsonify(output)  # JSON 형식으로 반환
 
     except Exception as e:
         print("Error:", e)

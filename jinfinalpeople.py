@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, Blueprint
 import boto3
-from io import StringIO
+import pandas as pd
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -10,7 +10,7 @@ CORS(app, resources={r"/api/*": {"origins": "http://a06c35398b3554cde90a91e66318
 
 jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)
 
-# S3에서 파일을 읽는 함수
+# S3에서 CSV 파일을 읽는 함수
 def read_csv_from_s3(bucket_name, file_key):
     s3_client = boto3.client('s3')
     try:
@@ -31,10 +31,13 @@ def serve_jinfinalpeople():
         if file_content is None:
             return jsonify({"error": "파일을 S3에서 읽는 중 오류 발생"}), 500
 
-        # CSV 내용을 줄 단위로 나누기
-        data = file_content.splitlines()
+        # pandas로 CSV 내용을 DataFrame으로 변환하여 JSON으로 반환
+        from io import StringIO
+        csv_buffer = StringIO(file_content)
+        df = pd.read_csv(csv_buffer)
+        json_data = df.to_json(orient='records')  # DataFrame을 JSON으로 변환
 
-        return jsonify({"content": data})  # CSV 데이터 반환
+        return jsonify({"content": json_data})  # JSON 데이터 반환
 
     except Exception as e:
         # 오류 처리
