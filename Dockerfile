@@ -15,18 +15,25 @@ RUN git clone https://github.com/BonjourBuerreBuerreCruasaint/spotrank-be.git /a
 # 작업 디렉토리 변경
 WORKDIR /app
 
-# git-lfs로 LFS 파일 복구
-RUN git lfs pull
-
-# 필요한 파일들을 복사
-COPY requirements.txt ./ 
-RUN pip install --no-cache-dir -r requirements.txt
-
 # .env 파일을 컨테이너로 복사
 COPY .env /app/.env
 
-# 애플리케이션 코드 복사
-COPY . ./
+# 로컬의 큰 데이터 파일들을 한 번에 복사 (여러 파일 포함)
+COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/data/* /app/data/
+
+# filtered_output 파일을 Docker 이미지에 추가
+COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/filtered_output /app/data/filtered_output.csv
+
+COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/combined_order.csv /app/data/combined_order.csv
+
+# JinFinalPeople.csv 파일을 Docker 이미지에 추가
+COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/JinFinalPeople.csv /app/data/JinFinalPeople.csv
+
+COPY C:/Users/USER/PycharmProjects/BBC/spotrank-be/modified_file.json /app/data/modified_file.json
+
+
+# 필요한 파일들을 복사
+COPY . ./ 
 
 # .env 파일을 환경 변수로 로드 (python-dotenv 사용)
 RUN pip install python-dotenv
