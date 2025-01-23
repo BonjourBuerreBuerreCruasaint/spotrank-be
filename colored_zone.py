@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Blueprint, Response
+from flask import Flask, jsonify, Blueprint, Response  # Response 임포트 추가
 import pandas as pd
 from flask_cors import CORS
 import os
@@ -35,7 +35,8 @@ def get_colored_zones():
 
         # 파일이 제대로 로드되지 않으면 오류 반환
         if filtered_df is None or combined_df is None:
-            return jsonify({"error": "Failed to load CSV files from S3"}), 500
+            error_data = {"error": "Failed to load CSV files from S3"}
+            return Response(response=json.dumps(error_data, ensure_ascii=False), mimetype='application/json', status=500, headers={'Content-Type': 'application/json; charset=utf-8'})
 
         print("CSV files loaded successfully.")
 
@@ -79,9 +80,7 @@ def get_colored_zones():
     except Exception as e:
         print("Error:", e)
         error_data = {"error": str(e)}
-        return Response(response=json.dumps(error_data), mimetype='application/json', status=500, headers={'Content-Type': 'application/json; charset=utf-8'})
-
-
+        return Response(response=json.dumps(error_data, ensure_ascii=False), mimetype='application/json', status=500, headers={'Content-Type': 'application/json; charset=utf-8'})
 
 app.register_blueprint(colored_blueprint)
 
