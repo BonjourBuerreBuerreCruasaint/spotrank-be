@@ -41,9 +41,3 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "1000m"
-          volumeMounts:
-            - name: git-lfs-cache
-              mountPath: /app/git-lfs-cache
-      volumes:
-        - name: git-lfs-cache
-          emptyDir: {}

@@ -8,7 +8,7 @@ import json
 app = Flask(__name__)
 
 # CORS 설정: 배포된 프론트엔드의 외부 IP나 도메인으로 변경
-CORS(app, resources={r"/api/*": {"origins": "http://a2599b037e85a4fd5bf5bb6e7a79950c-331937936.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://a394d93e1cb164bc48aee934560371a1-1195758023.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
 
 jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)
 
