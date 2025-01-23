@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, Blueprint
+from flask import Flask, Blueprint, Response
 import boto3
 import json
 from flask_cors import CORS
@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # CORS 설정: 배포된 프론트엔드의 외부 IP나 도메인으로 변경
-CORS(app, resources={r"/api/*": {"origins": "http://a67717a92d5fa4da7b0310806ac5d086-1723128517.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://a2599b037e85a4fd5bf5bb6e7a79950c-331937936.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
 
 get_seouldata_blueprint = Blueprint('get_seouldata', __name__)
 
@@ -29,7 +29,13 @@ def serve_seouldata():
         data = read_json_from_s3('backendsource', 'modified_file.json')
 
         if data is None:
-            return jsonify({"error": "파일을 S3에서 읽는 중 오류 발생"}), 500
+            error_response = {"error": "파일을 S3에서 읽는 중 오류 발생"}
+            return Response(
+                response=json.dumps(error_response, ensure_ascii=False),
+                mimetype='application/json',
+                status=500,
+                headers={'Content-Type': 'application/json; charset=utf-8'}
+            )
 
         # 데이터 검증: latitude, longitude 값 확인
         invalid_entries = []
@@ -39,15 +45,39 @@ def serve_seouldata():
             if latitude is None or longitude is None:
                 invalid_entries.append(index)
 
-        return jsonify(data)  # JSON 데이터 반환
+        # 유효한 데이터를 JSON 형식으로 반환
+        return Response(
+            response=json.dumps(data, ensure_ascii=False),
+            mimetype='application/json',
+            status=200,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
 
     except json.JSONDecodeError as jde:
-        # JSON 파싱 중 오류
-        return jsonify({"error": "JSON 파일을 파싱하는 중 오류 발생", "details": str(jde)}), 500
+        # JSON 파싱 중 오류 처리
+        error_response = {
+            "error": "JSON 파일을 파싱하는 중 오류 발생",
+            "details": str(jde)
+        }
+        return Response(
+            response=json.dumps(error_response, ensure_ascii=False),
+            mimetype='application/json',
+            status=500,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
 
     except Exception as e:
-        # 일반 오류 처리
-        return jsonify({"error": "JSON 파일을 제공하는 중 오류 발생", "details": str(e)}), 500
+        # 일반적인 오류 처리
+        error_response = {
+            "error": "JSON 파일을 제공하는 중 오류 발생",
+            "details": str(e)
+        }
+        return Response(
+            response=json.dumps(error_response, ensure_ascii=False),
+            mimetype='application/json',
+            status=500,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
 
 app.register_blueprint(get_seouldata_blueprint)
 

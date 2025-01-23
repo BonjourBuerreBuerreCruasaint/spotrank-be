@@ -1,14 +1,15 @@
-from flask import Flask, jsonify, Blueprint
+from flask import Flask, jsonify, Blueprint, Response
 import pandas as pd
 from flask_cors import CORS
 import os
 import boto3
 from io import StringIO
+import json  # json 임포트 추가
 
 app = Flask(__name__)
 
 # CORS 설정: 배포된 프론트엔드의 외부 IP나 도메인으로 변경
-CORS(app, resources={r"/api/*": {"origins": "http://a67717a92d5fa4da7b0310806ac5d086-1723128517.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://a2599b037e85a4fd5bf5bb6e7a79950c-331937936.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
 
 colored_blueprint = Blueprint('colored_zone', __name__)
 
@@ -72,12 +73,15 @@ def get_colored_zones():
         # 필요한 열만 선택하고, JSON으로 변환
         output = grouped_df[['store_name', 'latitude', 'longitude', 'total_sales', 'menu', 'order_time']].to_dict(orient='records')
         print("Output prepared successfully.")
-
-        return jsonify(output)  # JSON 형식으로 반환
+        
+        return Response(response=json.dumps(output, ensure_ascii=False), mimetype='application/json', status=200, headers={'Content-Type': 'application/json; charset=utf-8'})
 
     except Exception as e:
         print("Error:", e)
-        return jsonify({"error": str(e)}), 500
+        error_data = {"error": str(e)}
+        return Response(response=json.dumps(error_data), mimetype='application/json', status=500, headers={'Content-Type': 'application/json; charset=utf-8'})
+
+
 
 app.register_blueprint(colored_blueprint)
 

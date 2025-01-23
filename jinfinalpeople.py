@@ -1,13 +1,14 @@
-from flask import Flask, jsonify, Blueprint
+from flask import Flask, Blueprint, Response
 import boto3
 import pandas as pd
 from flask_cors import CORS
 from io import StringIO
+import json
 
 app = Flask(__name__)
 
 # CORS 설정: 배포된 프론트엔드의 외부 IP나 도메인으로 변경
-CORS(app, resources={r"/api/*": {"origins": "http://a67717a92d5fa4da7b0310806ac5d086-1723128517.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://a2599b037e85a4fd5bf5bb6e7a79950c-331937936.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
 
 jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)
 
@@ -30,7 +31,13 @@ def serve_jinfinalpeople():
         file_content = read_csv_from_s3('backendsource', 'JinFinalPeople.csv')
 
         if file_content is None:
-            return jsonify({"error": "파일을 S3에서 읽는 중 오류 발생"}), 500
+            error_response = {"error": "파일을 S3에서 읽는 중 오류 발생"}
+            return Response(
+                response=json.dumps(error_response, ensure_ascii=False),
+                mimetype='application/json',
+                status=500,
+                headers={'Content-Type': 'application/json; charset=utf-8'}
+            )
 
         # pandas로 CSV 내용을 DataFrame으로 변환하여 JSON으로 반환
         csv_buffer = StringIO(file_content)
@@ -38,11 +45,26 @@ def serve_jinfinalpeople():
         # DataFrame을 JSON으로 변환
         json_data = df.to_dict(orient='records')  # 'records' 형식으로 변환하여 리스트로 반환
 
-        return jsonify({"content": json_data})  # JSON 데이터 반환
+        # 유효한 데이터를 JSON 형식으로 반환
+        return Response(
+            response=json.dumps({"content": json_data}, ensure_ascii=False),
+            mimetype='application/json',
+            status=200,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
 
     except Exception as e:
         # 오류 처리
-        return jsonify({"error": "CSV 파일을 제공하는 중 오류 발생", "details": str(e)}), 500
+        error_response = {
+            "error": "CSV 파일을 제공하는 중 오류 발생",
+            "details": str(e)
+        }
+        return Response(
+            response=json.dumps(error_response, ensure_ascii=False),
+            mimetype='application/json',
+            status=500,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
 
 app.register_blueprint(jinfinalpeople_blueprint)
 

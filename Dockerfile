@@ -1,6 +1,10 @@
 # Python 기반 이미지에서 시작
 FROM python:3.9-slim
 
+# UTF-8 인코딩 설정
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
 # 작업 디렉토리 설정
 WORKDIR /app
 
