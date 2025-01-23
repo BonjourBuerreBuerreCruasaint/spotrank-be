@@ -12,13 +12,6 @@ db_config = {
     'database': 'test_db'
 }
 
-# MySQL 연결 설정
-db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'Welcome1!',
-    'database': 'test_db'
-}
 
 # 날짜 형식 확인 함수
 def is_date(string):

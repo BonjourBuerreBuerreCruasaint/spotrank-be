@@ -1,12 +1,13 @@
 
-import boto3
+#import boto3
+
 import requests
 
 from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 import os
 import mysql.connector
-import uuid  # 고유 파일 이름 생성을 위한 모듈
+#import uuid  # 고유 파일 이름 생성을 위한 모듈
 
 # Flask 앱 인스턴스
 app = Flask(__name__)

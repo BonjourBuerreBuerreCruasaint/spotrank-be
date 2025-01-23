@@ -2,7 +2,6 @@ import pandas as pd
 import random
 from datetime import datetime, timedelta
 import mysql.connector
-import re
 
 # MySQL 데이터베이스 연결
 connection = mysql.connector.connect(
@@ -10,13 +9,10 @@ connection = mysql.connector.connect(
     user='root',
     password='welcome1!',
     database='test_db'
-
 )
 
-# SQL 쿼리를 사용하여 'filtered_store_info' 테이블 읽기
+# SQL 쿼리를 사용하여 'stores' 테이블 읽기
 query = "SELECT * FROM stores"
-
-
 data = pd.read_sql(query, connection)
 
 # 업종 소분류별 메뉴 목록 정의
@@ -107,23 +103,23 @@ for _, row in data.iterrows():
 
     # 주문 테이블 생성
     order_table_name = f"order_{store_id}"
-    create_table(cursor, order_table_name, "menu VARCHAR(255), price INT, order_time DATETIME, count INT")
+    create_table(cursor, order_table_name, "store_name VARCHAR(255), menu VARCHAR(255), price INT, order_time DATETIME, count INT")
 
     # 12개월 데이터 생성
     for month_offset in range(12):
         # 주 단위 데이터 (30개)
         weekly_orders = [
-            (menu, menu_price_map[menu], random_order_time_weekly(), random_count())
+            (store_name, menu, menu_price_map[menu], random_order_time_weekly(), random_count())
             for menu in random.choices(menus, k=30)
         ]
-        insert_data(cursor, order_table_name, weekly_orders, ["menu", "price", "order_time", "count"])
+        insert_data(cursor, order_table_name, weekly_orders, ["store_name", "menu", "price", "order_time", "count"])
 
         # 월 단위 데이터 (30개)
         monthly_orders = [
-            (menu, menu_price_map[menu], random_order_time_monthly(month_offset), random_count())
+            (store_name, menu, menu_price_map[menu], random_order_time_monthly(month_offset), random_count())
             for menu in random.choices(menus, k=30)
         ]
-        insert_data(cursor, order_table_name, monthly_orders, ["menu", "price", "order_time", "count"])
+        insert_data(cursor, order_table_name, monthly_orders, ["store_name", "menu", "price", "order_time", "count"])
 
 # 커밋 및 종료
 connection.commit()
@@ -131,4 +127,3 @@ cursor.close()
 connection.close()
 
 print("12개월치 데이터가 성공적으로 생성되었습니다.")
-
