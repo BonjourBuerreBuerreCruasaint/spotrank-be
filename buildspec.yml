@@ -27,7 +27,7 @@ phases:
     commands:
       - echo Building and pushing Docker images to spotrank-ecr...
       - echo Building backend service...
-      - docker build -t backend:latest -f .Dockerfile .
+      - docker build -t backend:latest .
       - docker tag backend:latest 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend
       - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend
 
