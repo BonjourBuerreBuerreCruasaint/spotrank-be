@@ -8,7 +8,7 @@ metadata:
     environment: production
     version: v1.0.0
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: spotrank-be
