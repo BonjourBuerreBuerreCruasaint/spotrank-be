@@ -9,7 +9,7 @@ import json  # json 임포트 추가
 app = Flask(__name__)
 
 # CORS 설정: 배포된 프론트엔드의 외부 IP나 도메인으로 변경
-CORS(app, resources={r"/api/*": {"origins": "http://a61178354eac74fc69637655b4fdefd9-1062157786.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://af901001b66e0458a9d1649156e66173-214572647.ap-northeast-2.elb.amazonaws.com"}}, supports_credentials=True)
 
 colored_blueprint = Blueprint('colored_zone', __name__)
 
