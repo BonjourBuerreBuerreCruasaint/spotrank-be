@@ -4,7 +4,6 @@ from flask import Flask, jsonify, Blueprint
 from datetime import datetime
 import mysql.connector
 
-make_sell_data_blueprint = Blueprint('make_sell_data', __name__)
 
 # 데이터베이스 연결 설정
 db_config = {
@@ -15,7 +14,6 @@ db_config = {
     'auth_plugin': 'mysql_native_password'
 
 }
-
 
 # MySQL 테이블 생성 함수
 def create_sales_table():
@@ -90,7 +88,6 @@ def merge_order_tables():
 
 # Flask 애플리케이션 설정
 app = Flask(__name__)
-app.register_blueprint(make_sell_data_blueprint)
 
 @app.route('/merge', methods=['GET'])
 def merge_tables_endpoint():
