@@ -2,6 +2,7 @@ from flask import Flask, jsonify, Blueprint
 import boto3
 import pandas as pd
 from flask_cors import CORS
+from io import StringIO
 
 app = Flask(__name__)
 
@@ -32,10 +33,10 @@ def serve_jinfinalpeople():
             return jsonify({"error": "파일을 S3에서 읽는 중 오류 발생"}), 500
 
         # pandas로 CSV 내용을 DataFrame으로 변환하여 JSON으로 반환
-        from io import StringIO
         csv_buffer = StringIO(file_content)
         df = pd.read_csv(csv_buffer)
-        json_data = df.to_json(orient='records')  # DataFrame을 JSON으로 변환
+        # DataFrame을 JSON으로 변환
+        json_data = df.to_dict(orient='records')  # 'records' 형식으로 변환하여 리스트로 반환
 
         return jsonify({"content": json_data})  # JSON 데이터 반환
 
