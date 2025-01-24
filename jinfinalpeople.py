@@ -47,7 +47,7 @@ def serve_jinfinalpeople():
 
         # 유효한 데이터를 JSON 형식으로 반환
         return Response(
-            response=json.dumps({"content": json_data}, ensure_ascii=False),
+            response=json.dumps(file_content, ensure_ascii=False),
             mimetype='application/json',
             status=200,
             headers={'Content-Type': 'application/json; charset=utf-8'}
