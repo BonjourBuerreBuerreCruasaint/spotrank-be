@@ -25,4 +25,4 @@ RUN pip install python-dotenv
 EXPOSE 5000
 
 # Flask 실행 명령어 (dotenv로 환경 변수 로드)
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000", "--app", "app.py"]
