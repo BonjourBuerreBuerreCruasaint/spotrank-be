@@ -15,10 +15,10 @@ login_blueprint = Blueprint('login', __name__)  # API URL prefix
 # MySQL Database Configuration
 def get_db_connection():
     return pymysql.connect(
-        host='localhost',
+        host='13.209.87.204',
         user='root',
-        password='welcome1!',
-        database='test_db',
+        password='Welcome1!',
+        database='spotrank',
         cursorclass=pymysql.cursors.DictCursor
     )
 

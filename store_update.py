@@ -13,10 +13,10 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_
 
 # 데이터베이스 연결 설정
 db_config = {
-    'host': 'localhost',
+    'host': '13.209.87.204',
     'user': 'root',
-    'password': 'welcome1!',
-    'database': 'test_db'
+    'password': 'Welcome1!',
+    'database': 'spotrank'
 }
 
 @store_update_blueprint.route('/update-store', methods=['POST'])

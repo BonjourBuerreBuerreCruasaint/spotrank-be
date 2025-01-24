@@ -9,10 +9,10 @@ CORS(api_blueprint, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 # MySQL 데이터베이스 연결 설정
 db_config = {
-    'host': 'localhost',
+    'host': '13.209.87.204',
     'user': 'root',  # MySQL 사용자 이름
-    'password': 'welcome!',  # MySQL 비밀번호
-    'database': 'real_time_rank'
+    'password': 'Welcome1!',  # MySQL 비밀번호
+    'database': 'spotrank'
 }
 
 def get_db_connection():

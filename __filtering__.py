@@ -10,10 +10,10 @@ fake = Faker()
 
 # MySQL 데이터베이스 연결
 connection = pymysql.connect(
-    host='localhost',  # MySQL 호스트
+    host='13.209.87.204',  # MySQL 호스트
     user='root',  # MySQL 사용자 이름
-    password='welcome1!',  # MySQL 비밀번호
-    database='test_db'  # 사용할 데이터베이스 이름
+    password='Welcome1!',  # MySQL 비밀번호
+    database='spotrank'  # 사용할 데이터베이스 이름
 )
 
 # SQL 쿼리를 사용하여 'store_info' 테이블 읽기
@@ -21,6 +21,21 @@ query = "SELECT * FROM store_info"
 
 # pandas를 사용하여 SQL 쿼리 결과를 DataFrame으로 변환
 df = pd.read_sql(query, connection)
+
+# 컬럼명 출력 (디버깅을 위한 출력)
+print("컬럼명 확인:", df.columns)
+
+# 컬럼명 공백 제거
+df.columns = df.columns.str.strip()
+
+# '상권업종대분류명' 컬럼이 있는지 확인
+if '상권업종대분류명' not in df.columns:
+    print("Error: '상권업종대분류명' 컬럼이 존재하지 않습니다.")
+else:
+    print("'상권업종대분류명' 컬럼이 존재합니다.")
+
+# '상권업종대분류명' 컬럼에서 '식당', '카페', '한식', '음식', '커피'를 포함하는 행만 필터링
+filtered_df = df[df['상권업종대분류명'].str.contains('식당|카페|한식|음식|커피', na=False)]
 
 # 메뉴 카테고리 딕셔너리
 menu_dict = {
@@ -45,16 +60,16 @@ menu_dict = {
     "마라탕/훠궈": ["마라탕", "마라샹궈", "훠궈", "우삼겹훠궈", "마라룽샤"],
     "닭/오리고기 구이/찜": ["닭갈비", "오리훈제", "찜닭", "닭볶음탕", "간장찜닭"],
 }
-# '상권업종대분류명' 컬럼에서 '식당', '카페', '한식', '음식', '커피'를 포함하는 행만 필터링
-filtered_df = df[df['상권업종대분류명'].str.contains('식당|카페|한식|음식|커피', na=False)]
+
 # '상권업종소분류명'이 menu_dict에 포함된 데이터 필터링
 valid_subcategories = menu_dict.keys()
 filtered_df = filtered_df[filtered_df['상권업종소분류명'].isin(valid_subcategories)]
+
 # '시군구명' 컬럼에서 특정 지역(서대문구, 마포구)을 포함하는 행만 필터링
 filtered_df = filtered_df[filtered_df['시군구명'].str.contains('서대문구|마포구', na=False)]
 
-# 필요한 컬럼만 선택 (상호명, 상권업종대분류명, 상권업종중분류명, 상권업종소분류명, 시도명, 시군구명, 행정동명, 법정동명, 도로명주소, 경도, 위도)
-columns_to_keep = ['상호명', '상권업종소분류명','도로명주소', '경도', '위도']
+# 필요한 컬럼만 선택 (상호명, 상권업종소분류명, 도로명주소, 경도, 위도)
+columns_to_keep = ['상호명', '상권업종소분류명', '도로명주소', '경도', '위도']
 filtered_df = filtered_df[columns_to_keep].head(5000)
 
 # 필터링된 데이터를 MySQL 테이블에 저장
@@ -83,49 +98,40 @@ cursor.execute(create_table_query)
 for _, row in filtered_df.iterrows():
     # 카테고리 설정: 상권업종소분류명이 '카페'인 경우 카테고리='카페', 그렇지 않으면 카테고리='음식점'
     category = '카페' if '카페' in row['상권업종소분류명'] else '음식점'
+
     # 랜덤 데이터 생성
     store_phone = fake.phone_number()
     open_date = (datetime.now() - timedelta(days=random.randint(365, 3650))).strftime('%Y-%m-%d')
     intro_text = fake.text(max_nb_chars=200)
     image_url = f"https://via.placeholder.com/150?text={fake.word().capitalize()}"
-    # Faker 데이터를 생성
-    # 각 값들을 튜플로 변환
-    row_values = (
-        row['상호명'], row['상권업종대분류명'], row['상권업종중분류명'],
-        row['상권업종소분류명'], row['시도명'], row['시군구명'],
-        row['행정동명'], row['법정동명'], row['도로명주소'],
-        row['경도'], row['위도'], row['카테고리']
-    )
 
     # 상점 데이터 삽입
-    insert_query = """
-    INSERT INTO filtered_store_info (상호명, 상권업종대분류명, 상권업종중분류명, 상권업종소분류명, 
-                                     시도명, 시군구명, 행정동명, 법정동명, 도로명주소, 경도, 위도, 카테고리)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    insert_query = f"""
+    INSERT INTO {filtered_table_name} (상호명, 상권업종소분류명, 도로명주소, 경도, 위도, 카테고리, 가게전화번호, 개업일, 소개글, 이미지)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-    cursor.execute(insert_query, row_values)
-    print(f"상호명: {row['상호명']}, 카테고리: {row['카테고리']}가 filtered_store_info에 삽입되었습니다.")
+    cursor.execute(insert_query, (
+        row['상호명'], row['상권업종소분류명'], row['도로명주소'],
+        row['경도'], row['위도'], category, store_phone, open_date, intro_text, image_url
+    ))
+    # 콘솔에 로그 출력
+    print(f"상점 데이터 삽입: 상호명 = {row['상호명']}, 카테고리 = {category}")
 
-    # 사용자 데이터 생
+    # 사용자 데이터 생성
     email = fake.email()
     password = bcrypt.hashpw(fake.password(length=10).encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     phone = fake.phone_number()
     birthdate = fake.date_of_birth(minimum_age=18, maximum_age=65).strftime('%Y-%m-%d')
     username = fake.user_name()
 
-    # 상점 데이터를 삽입
-    insert_query = f"""
-    INSERT INTO {filtered_table_name} (상호명, 상권업종소분류명, 도로명주소, 경도, 위도, 카테고리, 가게전화번호, 개업일, 소개글, 이미지)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-    cursor.execute(insert_query, tuple(row) + (category,store_phone, open_date, intro_text, image_url))
-
     # 사용자 데이터를 삽입
     insert_user_query = """
         INSERT INTO users (email, password, phone, birthdate, username)
         VALUES (%s, %s, %s, %s, %s)
-        """
+    """
     cursor.execute(insert_user_query, (email, password, phone, birthdate, username))
+    # 콘솔에 로그 출력
+    print(f"사용자 데이터 삽입: 이메일 = {email}, 사용자명 = {username}")
 
 # 변경 사항 커밋
 connection.commit()
