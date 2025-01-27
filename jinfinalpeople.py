@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, Response
+from flask import Flask, Blueprint, Response, jsonify
 import boto3
 import pandas as pd
 from flask_cors import CORS
@@ -16,9 +16,9 @@ jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)
 def read_csv_from_s3(bucket_name, file_key):
     s3_client = boto3.client('s3')
     try:
-        # S3에서 파일 읽기
+        # S3에서 CSV 파일 읽기
         obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-        file_content = obj['Body'].read().decode('utf-8-sig')  # BOM 제거를 위해 'utf-8-sig' 사용
+        file_content = obj['Body'].read().decode('utf-8')  # 파일 내용 읽기
         return file_content
     except Exception as e:
         print(f"Error reading {file_key} from S3: {e}")
@@ -27,45 +27,28 @@ def read_csv_from_s3(bucket_name, file_key):
 @jinfinalpeople_blueprint.route('/jinfinalpeople', methods=['GET'])
 def serve_jinfinalpeople():
     try:
-        # S3에서 JinFinalPeople.csv 파일을 읽어옵니다.
-        file_content = read_csv_from_s3('backendsource', 'JinFinalPeople.csv')
+        # S3에서 CSV 파일을 읽어옵니다.
+        csv_data = read_csv_from_s3('backendsource', 'JinFinalPeople.csv')
 
-        if file_content is None:
-            error_response = {"error": "파일을 S3에서 읽는 중 오류 발생"}
-            return Response(
-                response=json.dumps(error_response, ensure_ascii=False),
-                mimetype='application/json',
-                status=500,
-                headers={'Content-Type': 'application/json; charset=utf-8'}
-            )
+        if csv_data is None:
+            return jsonify({"error": "파일을 S3에서 읽는 중 오류 발생"}), 500
 
-        # pandas로 CSV 내용을 DataFrame으로 변환
-        csv_buffer = StringIO(file_content)
-        df = pd.read_csv(csv_buffer)
+        # CSV 데이터를 DataFrame으로 변환
+        df = pd.read_csv(pd.compat.StringIO(csv_data))
 
-        # DataFrame을 JSON으로 변환
-        json_data = df.to_dict(orient='records')  # 'records' 형식으로 변환하여 리스트로 반환
+        # DataFrame을 원하는 JSON 구조로 변환
+        json_data = df.apply(lambda row: {
+            "기준_년분기_코드": row['기준_년분기_코드'],  # 컬럼명 그대로 사용
+            "상권_구분_코드_명": row['상권_구분_코드_명'],  # 컬럼명 그대로 사용
+            "상권배후지_코드_명": row['상권배후지_코드_명'],  # 컬럼명 그대로 사용
+            "TotalPeoPle": row['TotalPeoPle'],  # 컬럼명 그대로 사용
+            "latitude": row['latitude'],  # 컬럼명 그대로 사용
+            "longitude": row['longitude']  # 컬럼명 그대로 사용
+        }, axis=1).tolist()  # 각 행을 변환하여 리스트로 반환
 
-        # 유효한 데이터를 JSON 형식으로 반환
-        return Response(
-            response=json.dumps(json_data, ensure_ascii=False),
-            mimetype='application/json',
-            status=200,
-            headers={'Content-Type': 'application/json; charset=utf-8'}
-        )
-
+        return jsonify(json_data)  # JSON 형식으로 반환
     except Exception as e:
-        # 오류 처리
-        error_response = {
-            "error": "CSV 파일을 제공하는 중 오류 발생",
-            "details": str(e)
-        }
-        return Response(
-            response=json.dumps(error_response, ensure_ascii=False),
-            mimetype='application/json',
-            status=500,
-            headers={'Content-Type': 'application/json; charset=utf-8'}
-        )
+        return jsonify({"error": str(e)}), 500  # 오류 발생 시 JSON 형식으로 반환
 
 app.register_blueprint(jinfinalpeople_blueprint)
 
