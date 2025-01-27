@@ -18,7 +18,7 @@ def read_csv_from_s3(bucket_name, file_key):
     try:
         # S3에서 파일 읽기
         obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-        file_content = obj['Body'].read().decode('utf-8')  # 파일 내용 읽기
+        file_content = obj['Body'].read().decode('utf-8-sig')  # BOM 제거를 위해 'utf-8-sig' 사용
         return file_content
     except Exception as e:
         print(f"Error reading {file_key} from S3: {e}")
