@@ -13,7 +13,7 @@ CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}}, supports_
 jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)
 
 # S3에서 CSV 파일을 읽는 함수
-def read_csv_from_s3(bucket_name, file_key):
+def read_json_from_s3(bucket_name, file_key):
     s3_client = boto3.client('s3')
     try:
         # S3에서 CSV 파일 읽기
@@ -27,28 +27,60 @@ def read_csv_from_s3(bucket_name, file_key):
 @jinfinalpeople_blueprint.route('/jinfinalpeople', methods=['GET'])
 def serve_jinfinalpeople():
     try:
-        # S3에서 CSV 파일을 읽어옵니다.
-        csv_data = read_csv_from_s3('backendsource', 'JinFinalPeople.csv')
+        # S3에서 JSON 파일을 읽어옵니다.
+        data = read_json_from_s3('backendsource', 'JinFinalPeople.json')
 
-        if csv_data is None:
-            return jsonify({"error": "파일을 S3에서 읽는 중 오류 발생"}), 500
+        if data is None:
+            error_response = {"error": "파일을 S3에서 읽는 중 오류 발생"}
+            return Response(
+                response=json.dumps(error_response, ensure_ascii=False),
+                mimetype='application/json',
+                status=500,
+                headers={'Content-Type': 'application/json; charset=utf-8'}
+            )
 
-        # CSV 데이터를 DataFrame으로 변환
-        df = pd.read_csv(pd.compat.StringIO(csv_data))
+        # 데이터 검증: latitude, longitude 값 확인
+        invalid_entries = []
+        for index, entry in enumerate(data):
+            TotalPeoPle = entry.get("TotalPeople")
+            latitude = entry.get("latitude")
+            longitude = entry.get("longitude")
+            if latitude is None or longitude is None:
+                invalid_entries.append(index)
 
-        # DataFrame을 원하는 JSON 구조로 변환
-        json_data = df.apply(lambda row: {
-            "기준_년분기_코드": row['기준_년분기_코드'],  # 컬럼명 그대로 사용
-            "상권_구분_코드_명": row['상권_구분_코드_명'],  # 컬럼명 그대로 사용
-            "상권배후지_코드_명": row['상권배후지_코드_명'],  # 컬럼명 그대로 사용
-            "TotalPeoPle": row['TotalPeoPle'],  # 컬럼명 그대로 사용
-            "latitude": row['latitude'],  # 컬럼명 그대로 사용
-            "longitude": row['longitude']  # 컬럼명 그대로 사용
-        }, axis=1).tolist()  # 각 행을 변환하여 리스트로 반환
+        # 유효한 데이터를 JSON 형식으로 반환
+        return Response(
+            response=json.dumps(data, ensure_ascii=False),
+            mimetype='application/json',
+            status=200,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
 
-        return jsonify(json_data)  # JSON 형식으로 반환
+    except json.JSONDecodeError as jde:
+        # JSON 파싱 중 오류 처리
+        error_response = {
+            "error": "JSON 파일을 파싱하는 중 오류 발생",
+            "details": str(jde)
+        }
+        return Response(
+            response=json.dumps(error_response, ensure_ascii=False),
+            mimetype='application/json',
+            status=500,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # 오류 발생 시 JSON 형식으로 반환
+        # 일반적인 오류 처리
+        error_response = {
+            "error": "JSON 파일을 제공하는 중 오류 발생",
+            "details": str(e)
+        }
+        return Response(
+            response=json.dumps(error_response, ensure_ascii=False),
+            mimetype='application/json',
+            status=500,
+            headers={'Content-Type': 'application/json; charset=utf-8'}
+        )
 
 app.register_blueprint(jinfinalpeople_blueprint)
 
