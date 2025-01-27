@@ -21,8 +21,12 @@ COPY . ./
 # .env 파일을 환경 변수로 로드 (python-dotenv 사용)
 RUN pip install python-dotenv
 
+# Flask 환경 변수 설정
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+
 # Flask 애플리케이션이 실행될 포트 노출
 EXPOSE 5000
 
 # Flask 실행 명령어 (dotenv로 환경 변수 로드)
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000", "--app", "app.py"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
