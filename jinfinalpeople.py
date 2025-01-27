@@ -46,21 +46,9 @@ def serve_jinfinalpeople():
         # DataFrame을 JSON으로 변환
         json_data = df.to_dict(orient='records')  # 'records' 형식으로 변환하여 리스트로 반환
 
-        # 원하는 형식으로 데이터 가공
-        formatted_data = []
-        for item in json_data:
-            formatted_data.append({
-                "기준_년분기_코드": item['기준_년분기_코드'],
-                "상권_구분_코드_명": item['상권_구분_코드_명'],
-                "상권배후지_코드_명": item['상권배후지_코드_명'],
-                "TotalPeoPle": item['TotalPeoPle'],
-                "latitude": item['latitude'],
-                "longitude": item['longitude'],
-            })
-
         # 유효한 데이터를 JSON 형식으로 반환
         return Response(
-            response=json.dumps(formatted_data, ensure_ascii=False),
+            response=json.dumps(json_data, ensure_ascii=False),
             mimetype='application/json',
             status=200,
             headers={'Content-Type': 'application/json; charset=utf-8'}
