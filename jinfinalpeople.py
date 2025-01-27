@@ -16,10 +16,10 @@ jinfinalpeople_blueprint = Blueprint('jinfinalpeople', __name__)
 def read_json_from_s3(bucket_name, file_key):
     s3_client = boto3.client('s3')
     try:
-        # S3에서 CSV 파일 읽기
+        # S3에서 json 파일 읽기
         obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
         file_content = obj['Body'].read().decode('utf-8')  # 파일 내용 읽기
-        return file_content
+        return json.loads(file_content)
     except Exception as e:
         print(f"Error reading {file_key} from S3: {e}")
         return None
@@ -45,7 +45,7 @@ def serve_jinfinalpeople():
             TotalPeoPle = entry.get("TotalPeople")
             latitude = entry.get("latitude")
             longitude = entry.get("longitude")
-            if latitude is None or longitude is None:
+            if latitude is None or longitude is None or TotalPeoPle is None:
                 invalid_entries.append(index)
 
         # 유효한 데이터를 JSON 형식으로 반환
