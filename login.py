@@ -3,6 +3,7 @@ from flask_cors import CORS
 import re
 import pymysql
 import bcrypt
+import os  # 환경변수 가져오기
 
 # Flask App 초기화
 app = Flask(__name__)
@@ -11,14 +12,18 @@ CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}}, supports_
 
 login_blueprint = Blueprint('login', __name__)  # API URL prefix
 
-
-# MySQL Database Configuration
+# MySQL Database Configuration (환경변수로부터 DB 접속 정보 가져오기)
 def get_db_connection():
+    host = os.getenv('DATABASE_HOST')
+    user = os.getenv('DATABASE_USER')
+    password = os.getenv('DATABASE_PASSWORD')
+    database = os.getenv('DATABASE_NAME')
+
     return pymysql.connect(
-        host='localhost',
-        user='root',
-        password='welcome1!',
-        database='test_db',
+        host=host,
+        user=user,
+        password=password,
+        database=database,
         cursorclass=pymysql.cursors.DictCursor
     )
 
@@ -63,7 +68,7 @@ def login():
         conn.close()
 
 
-# Flask 애플리케이션에 Blueprint 등록$
+# Flask 애플리케이션에 Blueprint 등록
 app.register_blueprint(login_blueprint, url_prefix='/api')  # URL Prefix 추가
 
 if __name__ == '__main__':
