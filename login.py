@@ -7,7 +7,7 @@ import os  # 환경변수 가져오기
 
 # Flask App 초기화
 app = Flask(__name__)
-app.secret_key = 'welcome1!'
+app.secret_key = 'welcome1!'  # 세션 키 (필요시 사용)
 CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}}, supports_credentials=True)
 
 login_blueprint = Blueprint('login', __name__)  # API URL prefix
@@ -58,6 +58,7 @@ def login():
             if user:
                 # bcrypt를 사용하여 해시된 비밀번호 확인
                 if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+                    # 로그인 성공시 user_id 반환
                     return jsonify({"message": "로그인 성공", "user_id": user['id']}), 200
                 else:
                     return jsonify({"error": "비밀번호가 잘못되었습니다"}), 401
