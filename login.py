@@ -7,7 +7,7 @@ import bcrypt
 # Flask App 초기화
 app = Flask(__name__)
 app.secret_key = 'welcome1!'
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}}, supports_credentials=True)
 
 login_blueprint = Blueprint('login', __name__)  # API URL prefix
 
