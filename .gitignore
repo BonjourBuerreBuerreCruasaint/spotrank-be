@@ -2,8 +2,6 @@ output/
 
 uploads/
 
-.env
-
 *.csv
 
 *.json
