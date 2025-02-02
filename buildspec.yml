@@ -3,9 +3,8 @@ version: 0.2
 phases:
   install:
     commands:
-<<<<<<< HEAD
       - echo Logging in to Amazon ECR...
-      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc
   pre_build:
     commands:
       - echo Build started on `date`
@@ -28,7 +27,6 @@ artifacts:
   files:
     - '**/*'
   discard-paths: yes
-=======
       - echo Installing kubectl...
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
@@ -71,4 +69,3 @@ artifacts:
   files:
     - EKS/deployment.yaml
     - EKS/service.yaml
->>>>>>> bff0fb76d67520913466a0ce9e6f208b4f05a1d7
