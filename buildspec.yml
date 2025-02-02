@@ -27,6 +27,8 @@ artifacts:
   files:
     - '**/*'
   discard-paths: true
+
+  commands:
       - echo Installing kubectl...
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
@@ -62,7 +64,6 @@ artifacts:
       - sed -i.bak 's#AWS_ECR_URI#440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend#g' ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/deployment.yaml
       - kubectl apply -f ./EKS/service.yaml
-
       - echo Deployment completed on $(date).
 
 artifacts:
