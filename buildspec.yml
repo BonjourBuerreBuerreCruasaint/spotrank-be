@@ -1,0 +1,75 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+<<<<<<< HEAD
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+
+  pre_build:
+    commands:
+      - echo Build started on `date`
+      - echo Installing dependencies...
+      - pip install -r requirements.txt  # spotrank-be에 맞는 명령어
+
+  build:
+    commands:
+      - echo Building Flask App...
+      - python -m compileall .  # Python 코드를 컴파일합니다.
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - docker build -t spotrank-be:latest .  # Docker 이미지 빌드
+      - docker tag spotrank-be:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:latest  # ECR에 푸시
+
+artifacts:
+  files:
+    - '**/*'
+  discard-paths: yes
+=======
+      - echo Installing kubectl...
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID
+      - AWS_REGION=$AWS_DEFAULT_REGION
+      - curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.6/2023-10-17/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+      - mkdir -p ~/.kube
+      - echo Setting up kubeconfig for EKS...
+      - aws eks --region ap-northeast-2 update-kubeconfig --name spotrankeks
+      - echo Verifying Kubernetes access...
+      - kubectl version --client
+
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com
+      - echo Pre-build step completed.
+
+  build:
+    commands:
+      - echo Building and pushing Docker images to spotrank-ecr...
+      - echo Building backend service...
+      - docker build -t backend:latest .
+      - docker tag backend:latest 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend
+      - docker push 440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend
+
+  post_build:
+    commands:
+      - echo Deploying services to EKS...
+      - echo Deploying backend service...
+      - sed -i.bak 's#AWS_ECR_URI#440744225243.dkr.ecr.ap-northeast-2.amazonaws.com/bbc:backend#g' ./EKS/deployment.yaml
+      - kubectl apply -f ./EKS/deployment.yaml
+      - kubectl apply -f ./EKS/service.yaml
+
+      - echo Deployment completed on $(date).
+
+artifacts:
+  files:
+    - EKS/deployment.yaml
+    - EKS/service.yaml
+>>>>>>> bff0fb76d67520913466a0ce9e6f208b4f05a1d7

@@ -1,0 +1,11 @@
+output/
+
+uploads/
+
+.env
+
+*.csv
+
+*.json
+
+__pycache__/
