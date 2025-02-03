@@ -61,9 +61,11 @@ def login():
             if user:
                 # bcrypt를 사용하여 해시된 비밀번호 확인
                 if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+                    print("Password match successful")
                     # 로그인 성공시 user_id 반환
                     return jsonify({"message": "로그인 성공", "user_id": user['id']}), 200
                 else:
+                    print(f"Password check failed for {email}")
                     return jsonify({"error": "비밀번호가 잘못되었습니다"}), 401
             else:
                 return jsonify({"error": "등록되지 않은 이메일입니다"}), 404
