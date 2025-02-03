@@ -18,10 +18,10 @@ business_join_blueprint = Blueprint('business_join', __name__)
 
 # MySQL 설정
 db_config = {
-    'host': 'localhost',
+    'host': '13.209.87.204',
     'user': 'root',
-    'password': 'welcome1!',
-    'database': 'test_db'
+    'password': 'Welcome1!',
+    'database': 'spotrank'
 }
 
 def get_coordinates_from_address(address):

@@ -5,17 +5,17 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 
 reset_password_blueprint = Blueprint('reset_password', __name__)
 
 # MySQL 데이터베이스 연결 설정
 def get_db_connection():
     return mysql.connector.connect(
-        host='localhost',  # MySQL 호스트 (로컬 서버일 경우 'localhost' 사용)
+        host='13.209.87.204',  # MySQL 호스트 (로컬 서버일 경우 'localhost' 사용)
         user='root',       # MySQL 사용자
-        password='y2kxtom16spu!',  # MySQL 비밀번호
-        database='info'   # 사용할 데이터베이스
+        password='Welcome1!',  # MySQL 비밀번호
+        database='spotrank'   # 사용할 데이터베이스
     )
 
 # 새 비밀번호 설정

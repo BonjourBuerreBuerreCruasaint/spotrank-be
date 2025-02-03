@@ -4,7 +4,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 app.secret_key='Welcome1!'
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 
 verify_business_blueprint = Blueprint('verify_business', __name__)
 # 공공 API 키 설정

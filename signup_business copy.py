@@ -7,15 +7,15 @@ import mysql.connector
 # Flask 앱 인스턴스
 app = Flask(__name__)
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 
 business_join_blueprint = Blueprint('business_join', __name__)
 
 db_config = {
-    'host': 'localhost',
+    'host': '13.209.87.204',
     'user': 'root',
-    'password': 'y2kxtom16spu!',
-    'database': 'info'
+    'password': 'Welcome1!',
+    'database': 'spotrank'
 }
 
 def get_db_connection():
