@@ -9,14 +9,14 @@ app.secret_key = 'Welcome1!'  # Flask 세션을 위한 비밀키 설정
 store_update_blueprint = Blueprint('store_update_blueprint', __name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}}, supports_credentials=True)
 
 # 데이터베이스 연결 설정
 db_config = {
-    'host': 'localhost',
+    'host': '13.209.87.204',
     'user': 'root',
-    'password': 'welcome1!',
-    'database': 'test_db'
+    'password': 'Welcome1!',
+    'database': 'spotrank'
 }
 
 @store_update_blueprint.route('/update-store', methods=['POST'])

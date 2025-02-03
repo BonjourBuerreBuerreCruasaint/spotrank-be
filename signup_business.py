@@ -11,7 +11,7 @@ import mysql.connector
 # Flask 앱 인스턴스
 app = Flask(__name__)
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 API_KEY = "650d33464694cb373cf53be21033be2b"
 
 business_join_blueprint = Blueprint('business_join', __name__)

@@ -4,14 +4,14 @@ from flask_cors import CORS
 # Blueprint 설정
 api_blueprint = Blueprint('api', __name__)
 
-CORS(api_blueprint, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(api_blueprint, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 
 
 # MySQL 데이터베이스 연결 설정
 db_config = {
-    'host': 'localhost',
+    'host': '13.209.87.204',
     'user': 'root',  # MySQL 사용자 이름
-    'password': 'welcome!',  # MySQL 비밀번호
+    'password': 'Welcome!',  # MySQL 비밀번호
     'database': 'real_time_rank'
 }
 
