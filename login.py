@@ -40,7 +40,7 @@ def validate_email(email):
 # 로그인 엔드포인트
 @login_blueprint.route('/login', methods=['POST'])
 def login():
-    conn = None
+    conn = None  # conn 초기화
     try:
         data = request.json
         print(f"Request data: {data}")
@@ -54,7 +54,14 @@ def login():
         if not validate_email(email):
             return jsonify({"error": "이메일 형식으로 입력해주세요"}), 400
 
-        conn = get_db_connection()
+        # 데이터베이스 연결 시도
+        try:
+            conn = get_db_connection()
+        except Exception as db_connect_error:
+            print(f"Failed to connect to the database: {db_connect_error}")
+            return jsonify({"error": "데이터베이스 연결에 실패했습니다"}), 500
+
+        # 사용자 조회 및 비밀번호 검증
         with conn.cursor() as cursor:
             query = "SELECT id, password FROM users WHERE email = %s"
             print(f"Executing query: {query} with email: {email}")
@@ -76,7 +83,8 @@ def login():
         print(f"Error occurred: {e}")
         return jsonify({"error": "서버 오류"}), 500
     finally:
-        if conn:
+        # conn이 초기화된 경우에만 닫기
+        if conn is not None:
             try:
                 conn.close()
                 print("Database connection closed.")
