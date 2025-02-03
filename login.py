@@ -36,6 +36,7 @@ def validate_email(email):
 # 로그인 엔드포인트
 @login_blueprint.route('/login', methods=['POST'])
 def login():
+    conn = None  # conn을 미리 초기화
     try:
         data = request.json
         print(f"Request data: {data}")  # 전달된 JSON 데이터 출력
@@ -69,7 +70,8 @@ def login():
         print(f"Error occurred: {e}")  # 발생한 오류 출력
         return jsonify({"error": "서버 오류"}), 500
     finally:
-        conn.close()
+        if conn:  # conn이 존재할 경우에만 닫기
+            conn.close()
 
 # Flask 애플리케이션에 Blueprint 등록
 app.register_blueprint(login_blueprint, url_prefix='/api')  # URL Prefix 추가
