@@ -4,7 +4,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Welcome1!'  # Flask 시크릿 키 설정
 logout_blueprint = Blueprint('logout', __name__)
-CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 
 
 # API 엔드포인트: 로그아웃

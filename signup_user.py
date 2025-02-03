@@ -7,7 +7,7 @@ app = Flask(__name__)
 # bcrypt = Bcrypt(app)
 
 # CORS 설정 (모든 /api/* 경로에 대해 localhost:3000에서 오는 요청을 허용)
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 signup_blueprint = Blueprint('signup', __name__)
 
 db_config = {

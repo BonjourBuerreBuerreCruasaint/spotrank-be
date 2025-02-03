@@ -6,14 +6,14 @@ from datetime import datetime
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'welcome1!'  # Flask 시크릿 키 설정
 get_menu_data_blueprint = Blueprint('get_menu_data', __name__)
-CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 
 # MySQL 연결 설정
 db_config = {
-    'host': 'localhost',
+    'host': '13.209.87.204',
     'user': 'root',
-    'password': 'welcome1!',
-    'database': 'test_db'
+    'password': 'Welcome1!',
+    'database': 'spotrank.store'
 }
 
 def get_db_connection():
