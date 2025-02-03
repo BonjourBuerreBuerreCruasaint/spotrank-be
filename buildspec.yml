@@ -20,7 +20,7 @@ phases:
     commands:
       - echo Build completed on `date`
       - docker build -t spotrank-be:backend .  # Docker 이미지 빌드
-      - docker tag spotrank-be:backend $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:backend
+      - docker tag spotrank-be:backend $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/bbc:backend
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/spotrank-be:backend  # ECR에 푸시
 
 artifacts:
