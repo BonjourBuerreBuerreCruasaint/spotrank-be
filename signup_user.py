@@ -11,10 +11,10 @@ CORS(app, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 signup_blueprint = Blueprint('signup', __name__)
 
 db_config = {
-    'host': "127.0.0.1",
+    'host': "13.209.87.204",
     'user': 'root',
-    'password': 'welcome1!',
-    'database': 'test_db'
+    'password': 'Welcome1!',
+    'database': 'spotrank'
 
 }
 

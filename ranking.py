@@ -11,7 +11,7 @@ CORS(api_blueprint, resources={r"/api/*": {"origins": "http://spotrank.store"}})
 db_config = {
     'host': '13.209.87.204',
     'user': 'root',  # MySQL 사용자 이름
-    'password': 'Welcome!',  # MySQL 비밀번호
+    'password': 'Welcome1!',  # MySQL 비밀번호
     'database': 'real_time_rank'
 }
 
