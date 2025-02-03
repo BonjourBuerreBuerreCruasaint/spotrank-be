@@ -25,15 +25,13 @@ spec:
           imagePullPolicy: Always
           env:
             - name: DATABASE_HOST
-              value: "127.0.0.1"
+              value: "13.209.87.204"
             - name: DATABASE_USER
               value: "root"
             - name: DATABASE_PASSWORD
-              value: "password"
+              value: "Welcome1!"
             - name: DATABASE_NAME
-              value: "info"
-            - name: DATE
-              value: 'DATE_STRING'
+              value: "spotrank"
           resources:
             requests:
               memory: "256Mi"
