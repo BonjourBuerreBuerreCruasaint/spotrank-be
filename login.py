@@ -48,7 +48,7 @@ def login():
         if not validate_email(email):
             return jsonify({"error": "이메일 형식으로 입력해주세요"}), 400
 
-        conn = get_db_connection()
+        conn = get_db_connection()  # 데이터베이스 연결 시도
         with conn.cursor() as cursor:
             query = "SELECT id, password FROM users WHERE email = %s"
             cursor.execute(query, (email,))
@@ -66,12 +66,19 @@ def login():
             else:
                 return jsonify({"error": "등록되지 않은 이메일입니다"}), 404
 
+    except pymysql.MySQLError as db_error:
+        print(f"Database error occurred: {db_error}")  # DB 관련 오류 출력
+        return jsonify({"error": "데이터베이스 오류"}), 500
     except Exception as e:
-        print(f"Error occurred: {e}")  # 발생한 오류 출력
+        print(f"Error occurred: {e}")  # 발생한 일반 오류 출력
         return jsonify({"error": "서버 오류"}), 500
     finally:
         if conn:  # conn이 존재할 경우에만 닫기
-            conn.close()
+            try:
+                conn.close()
+                print("Database connection closed.")
+            except Exception as close_error:
+                print(f"Error closing connection: {close_error}")
 
 # Flask 애플리케이션에 Blueprint 등록
 app.register_blueprint(login_blueprint, url_prefix='/api')  # URL Prefix 추가
