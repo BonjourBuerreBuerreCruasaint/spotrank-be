@@ -10,7 +10,7 @@ fake = Faker()
 
 # MySQL 데이터베이스 연결
 connection = pymysql.connect(
-    host='13.209.87.204',  # MySQL 호스트
+    host='15.164.175.70',  # MySQL 호스트
     user='root',  # MySQL 사용자 이름
     password='Welcome1!',  # MySQL 비밀번호
     database='spotrank'  # 사용할 데이터베이스 이름
@@ -70,7 +70,7 @@ filtered_df = filtered_df[filtered_df['시군구명'].str.contains('서대문구
 
 # 필요한 컬럼만 선택 (상호명, 상권업종소분류명, 도로명주소, 경도, 위도)
 columns_to_keep = ['상호명', '상권업종소분류명', '도로명주소', '경도', '위도']
-filtered_df = filtered_df[columns_to_keep].head(5000)
+filtered_df = filtered_df[columns_to_keep].head(1000)
 
 # 필터링된 데이터를 MySQL 테이블에 저장
 filtered_table_name = 'stores'

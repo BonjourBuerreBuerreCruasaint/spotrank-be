@@ -1,5 +1,6 @@
 import secrets
 from datetime import timedelta
+from flask_socketio import SocketIO,emit
 
 from flask import Flask
 from flask_bcrypt import Bcrypt
@@ -15,7 +16,7 @@ from colored_zone import colored_blueprint
 from find_id import find_id_blueprint
 from signup_user import signup_blueprint  # join.py에서 Blueprint 가져오기
 from login import login_blueprint
-from __make_sell_data__ import make_sell_data_blueprint  # make_sell_data.py에서 Blueprint 가져오기
+#from __make_sell_data__ import make_sell_data_blueprint  # make_sell_data.py에서 Blueprint 가져오기
 from reset_password import reset_password_blueprint
 from store_update import store_update_blueprint
 from verify_business import verify_business_blueprint
@@ -28,10 +29,29 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # 세션 유지 �
 app.config['SESSION_COOKIE_SECURE'] = False  # 개발 환경에서는 False
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 세션 쿠키 SameSite 설정
 # CORS 설정
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}},supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "*"}},supports_credentials=True)
 
+# socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
+#
+#
+# # 🔹 WebSocket 연결 핸들러
+# @socketio.on("connect")
+# def handle_connect():
+#     print("✅ WebSocket 연결 성공!")
+#     emit("message", {"data": "WebSocket 연결 성공!"})
+#
+# # 🔹 WebSocket 메시지 핸들러
+# @socketio.on("message")
+# def handle_message(data):
+#     print(f"📩 클라이언트 메시지 수신: {data}")
+#     emit("response", {"data": f"서버가 받은 데이터: {data}"})
+#
+# # 🔹 WebSocket 연결 종료 핸들러
+# @socketio.on("disconnect")
+# def handle_disconnect():
+#     print("❌ WebSocket 연결 종료!")
 app.register_blueprint(api_blueprint, url_prefix='/')
-app.register_blueprint(make_sell_data_blueprint, url_prefix='/make-sell-data')
+#app.register_blueprint(make_sell_data_blueprint, url_prefix='/make-sell-data')
 #app.register_blueprint(location_blueprint, url_prefix='/')
 app.register_blueprint(signup_blueprint, url_prefix='/api')  # '/api/signup'을 올바르게 설정
 app.register_blueprint(business_join_blueprint, url_prefix='/api')
@@ -48,4 +68,4 @@ app.register_blueprint(logout_blueprint, url_prefix='/api')
 
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port=5000)  # 포트 지정 가능
+    app.run(debug=True,host='0.0.0.0',port=5000, threaded=True)  # 포트 지정 가능

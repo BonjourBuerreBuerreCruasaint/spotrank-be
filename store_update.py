@@ -8,12 +8,12 @@ app = Flask(__name__)
 app.secret_key = 'Welcome1!'  # Flask 세션을 위한 비밀키 설정
 store_update_blueprint = Blueprint('store_update_blueprint', __name__)
 UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['uploads'] = UPLOAD_FOLDER
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
 # 데이터베이스 연결 설정
 db_config = {
-    'host': '13.209.87.204',
+    'host': '15.164.175.70',
     'user': 'root',
     'password': 'Welcome1!',
     'database': 'spotrank'
@@ -64,7 +64,7 @@ def update_store():
     for image in shop_images:
         if image:
             filename = secure_filename(image.filename)
-            image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            image_path = os.path.join(app.config['uploads'], filename)
             image.save(image_path)
             image_paths.append(image_path)
 

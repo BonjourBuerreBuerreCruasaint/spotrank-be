@@ -12,7 +12,7 @@ reset_password_blueprint = Blueprint('reset_password', __name__)
 # MySQL 데이터베이스 연결 설정
 def get_db_connection():
     return mysql.connector.connect(
-        host='13.209.87.204',  # MySQL 호스트 (로컬 서버일 경우 'localhost' 사용)
+        host='15.164.175.70',  # MySQL 호스트 (로컬 서버일 경우 'localhost' 사용)
         user='root',       # MySQL 사용자
         password='Welcome1!',  # MySQL 비밀번호
         database='spotrank'   # 사용할 데이터베이스

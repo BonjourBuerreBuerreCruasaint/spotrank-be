@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request, Blueprint
 import mysql.connector
 from flask_cors import CORS
-from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'welcome1!'  # Flask 시크릿 키 설정
@@ -10,7 +9,7 @@ CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://l
 
 # MySQL 연결 설정
 db_config = {
-    'host': '13.209.87.204',
+    'host': '15.164.175.70',
     'user': 'root',
     'password': 'Welcome1!',
     'database': 'spotrank'
@@ -23,9 +22,9 @@ def get_db_connection():
         print(f"MySQL 연결 실패: {err}")
         raise
 
-# API 엔드포인트: 하루 동안의 누적 판매 데이터 반환
+# API 엔드포인트: 하루 동안의 상위 5개 메뉴 판매 데이터 반환
 @get_menu_data_blueprint.route('/get-menu-data', methods=['GET'])
-def get_daily_sales_data():
+def get_top5_sales_data():
     try:
         # Authorization 헤더에서 user_id 가져오기
         user_id = request.headers.get('Authorization')
@@ -36,33 +35,34 @@ def get_daily_sales_data():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # 하루 누적 데이터를 가져오는 쿼리
+        # 하루 동안의 판매량이 많은 TOP 5 메뉴 조회
         query = """
-        SELECT 
-            menu_name AS name,
-            price,
-            COUNT(*) AS total_count,
-            SUM(price) AS total_sales
-        FROM 
-            sales_data
-        WHERE 
-            user_id = %s
-            AND DATE(order_time) = CURDATE()
-        GROUP BY 
-            menu_name, price
-        ORDER BY 
-            total_sales DESC;
+            SELECT 
+                menu_name AS name,
+                SUM(quantity) AS total_count,  -- ✅ 동일한 메뉴의 개수 합산
+                SUM(price * quantity) AS total_sales,  -- ✅ 총 매출 합산
+                ROUND(SUM(price * quantity) / SUM(quantity), 0) AS price -- ✅ 평균 가격 계산하여 출력
+            FROM 
+                sales_data
+            WHERE 
+                user_id = %s
+                AND DATE(order_time) = CURDATE()
+            GROUP BY 
+                menu_name
+            ORDER BY 
+                total_sales DESC
+            LIMIT 5;  -- ✅ 상위 5개 메뉴만 반환
         """
         print(f"Executing query with user_id: {user_id}")
         cursor.execute(query, (user_id,))
-        daily_sales = cursor.fetchall()
-        print(f"Query result: {daily_sales}")
+        top5_sales = cursor.fetchall()
+        print(f"Query result: {top5_sales}")
 
-        if not daily_sales:
+        if not top5_sales:
             return jsonify({"message": "오늘의 판매 데이터가 없습니다."}), 404
 
         # 결과 데이터 반환
-        return jsonify(daily_sales), 200
+        return jsonify(top5_sales), 200
 
     except mysql.connector.Error as err:
         print(f"데이터베이스 오류: {err}")

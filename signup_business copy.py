@@ -12,7 +12,7 @@ CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 business_join_blueprint = Blueprint('business_join', __name__)
 
 db_config = {
-    'host': 'localhost',
+    'host': '15.164.175.70',
     'user': 'root',
     'password': 'y2kxtom16spu!',
     'database': 'info'
@@ -28,7 +28,7 @@ def get_db_connection():
 # 파일 업로드를 위한 폴더 설정
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['uploads'] = UPLOAD_FOLDER
 
 # 라우팅: 사업자 회원가입
 @business_join_blueprint.route('/business-signup', methods=['POST','OPTIONS'])
@@ -51,7 +51,7 @@ def business_signup():
     # 파일 저장
     image_filename = None
     if file:
-        image_filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        image_filename = os.path.join(app.config['uploads'], file.filename)
         file.save(image_filename)
 
     try:
