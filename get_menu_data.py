@@ -38,17 +38,16 @@ def get_top5_sales_data():
         # 하루 동안의 판매량이 많은 TOP 5 메뉴 조회
         query = """
             SELECT 
-                menu_name AS name,
-                SUM(quantity) AS total_count,  -- ✅ 동일한 메뉴의 개수 합산
-                SUM(price * quantity) AS total_sales,  -- ✅ 총 매출 합산
-                ROUND(SUM(price * quantity) / SUM(quantity), 0) AS price -- ✅ 평균 가격 계산하여 출력
+                top_menu AS name,
+                SUM(count) AS total_count,  -- ✅ 동일한 메뉴의 개수 합산
+                SUM(total_sales) AS total_sales,  -- ✅ 총 매출 합산
+                ROUND(SUM(total_sales)/ SUM(count), 0) AS price -- ✅ 평균 가격 계산하여 출력
             FROM 
-                sales_data
+                sales_hourly
             WHERE 
-                user_id = %s
-                AND DATE(order_time) = CURDATE()
+                store_id = %s
             GROUP BY 
-                menu_name
+                top_menu
             ORDER BY 
                 total_sales DESC
             LIMIT 5;  -- ✅ 상위 5개 메뉴만 반환

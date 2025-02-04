@@ -32,11 +32,11 @@ def update_store():
         with connection.cursor() as cursor:
             select_query = """
                 SELECT 
-                    store_name, 
-                    store_phone_number, 
-                    address, 
-                    description, 
-                    image 
+                    상호명 as store_name, 
+                    가게전화번호 as store_phone_number, 
+                    도로명주소 as address, 
+                    소개글 as description, 
+                    이미지 as image 
                 FROM stores 
                 WHERE id = %s
             """
@@ -76,11 +76,11 @@ def update_store():
             update_query = """
                 UPDATE stores
                 SET 
-                    store_name = %s,
-                    store_phone_number = %s,
-                    address = %s,
-                    description = %s,
-                    image = %s
+                    상호명 as store_name = %s,
+                    가게전화번호 as store_phone_number = %s,
+                    도로명주소 as address = %s,
+                    소개글 as description = %s,
+                    이미지 as image = %s
                 WHERE id = %s
             """
             image_path = image_paths[0] if image_paths else existing_data[4]  # 첫 번째 이미지를 대표 이미지로 저장

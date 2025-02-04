@@ -194,36 +194,50 @@
 #             # 처리된 데이터 저장
 #             save_processed_data_to_mysql(processed_data)
 
-import pandas as pd
-import json
+import random
+import mysql.connector
+from datetime import datetime, timedelta
 
-# JSON 파일 경로
-sales_file = "sales_data.json"
-stores_file = "stores.json"
+# ✅ MySQL 연결 설정
+db_config = {
+    'host': '15.164.175.70',
+    'user': 'root',
+    'password': 'Welcome1!',
+    'database': 'spotrank'
+}
 
-# JSON 파일 로드
-with open(sales_file, "r", encoding="utf-8") as f:
-    sales_data = json.load(f)
+# ✅ 데이터베이스 연결
+conn = mysql.connector.connect(**db_config)
+cursor = conn.cursor()
 
-with open(stores_file, "r", encoding="utf-8") as f:
-    stores_data = json.load(f)
+# ✅ "올도우" 매장 정보
+store_id = 1
+store_name = "올도우"
 
-# 데이터프레임 변환
-df_sales = pd.DataFrame(sales_data)
-df_stores = pd.DataFrame(stores_data)
+# ✅ 메뉴 리스트
+menus = ["크루아상", "도넛", "머핀", "타르트"]
 
-# `sales_data`에 `store_name` 추가를 위해 조인
-df_merged = df_sales.merge(df_stores, left_on="user_id", right_on="id", how="left")
+# ✅ 한 달 동안의 데이터 생성
+weeks = 4  # 4주치 데이터
 
-# 컬럼명 변경 및 필요한 컬럼 선택
-df_merged.rename(columns={"quantity": "count", "menu_name": "menu", "상호명": "store_name"}, inplace=True)
-df_final = df_merged[["order_time", "store_name", "menu", "count", "price"]]
+data = []
 
-# 총 매출 계산
-df_final["total_sales"] = df_final["count"] * df_final["price"]
+for week in range(1, weeks + 1):
+    total_sales = round(random.uniform(5000000, 20000000), 2)  # 랜덤 매출 (500만 ~ 2000만)
+    top_menus = ", ".join(random.sample(menus, 3))  # 인기 메뉴 3개 랜덤 선택
 
-# CSV 저장
-output_file = "sales_report_final.csv"
-df_final.to_csv(output_file, index=False, encoding="utf-8-sig")
+    data.append((store_id, store_name, week, total_sales, top_menus))
 
-print(f"CSV 파일이 저장되었습니다: {output_file}")
+# ✅ MySQL에 데이터 삽입
+query = """
+    INSERT INTO sales_weekly (store_id, store_name, week_number, total_sales, top_menu)
+    VALUES (%s, %s, %s, %s, %s)
+"""
+cursor.executemany(query, data)
+conn.commit()
+
+print(f"✅ 총 {len(data)}개의 주간 매출 데이터가 저장되었습니다.")
+
+# ✅ 연결 종료
+cursor.close()
+conn.close()

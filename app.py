@@ -7,6 +7,9 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 
 from get_menu_data import get_menu_data_blueprint
+from get_sales_daily import sales_daily_blueprint
+from get_sales_monthly import get_month_sales_blueprint
+from get_sales_weekly import weekly_sales_blueprint
 from get_seouldata import get_seouldata_blueprint
 from jinfinalpeople import jinfinalpeople_blueprint
 from logout import logout_blueprint
@@ -65,7 +68,9 @@ app.register_blueprint(jinfinalpeople_blueprint, url_prefix='/api')
 app.register_blueprint(get_seouldata_blueprint,url_prefix='/api')
 app.register_blueprint(get_menu_data_blueprint, url_prefix='/api')
 app.register_blueprint(logout_blueprint, url_prefix='/api')
-
+app.register_blueprint(sales_daily_blueprint, url_prefix='/api')
+app.register_blueprint(weekly_sales_blueprint,url_prefix='/api')
+app.register_blueprint(get_month_sales_blueprint,url_prefix='/api')
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0',port=5000, threaded=True)  # 포트 지정 가능
